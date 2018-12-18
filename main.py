@@ -678,6 +678,24 @@ def push_needed(drive,item_path):
     local_time = os.path.getmtime(item_path)-float(19800.00)
     return drive_time<local_time
 
+def create_new(cwd,fid,exist=False):
+    if not exist:
+        os.mkdir(cwd)
+    data = drive_data()
+    data[cwd] = {}
+    data[cwd]['id'] = fid
+    data[cwd]['time'] = time.time()
+    drive_data(data)
+
+def get_file(fid):
+    data=drive_data()
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    files = service.files().get(fileId=fid).execute()
+    return files
+
 def get_child(cwd):
     # print(fid)
     data=drive_data()
@@ -722,7 +740,11 @@ def create_dir(cwd,pid,name):
     click.secho("Created a syncable directory",fg='magenta')
     return full_path,fid['id']
 
-def file_download(service,item,cwd,sync_time):
+def file_download(item,cwd,sync_time=time.time()):
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
     fid = item['id']
     fname = item['name']
     fh = io.BytesIO()
@@ -794,7 +816,7 @@ def pull_content(cwd,fid):
         dir_name = os.path.join(cwd,item['name'])
         if(item['mimeType']!='application/vnd.google-apps.folder'):
             if((not os.path.exists(dir_name)) or write_needed(dir_name,item,data[cwd]['time'])):
-                file_download(service,item,cwd,data[cwd]['time'])
+                file_download(item,cwd,data[cwd]['time'])
         else:
             #print(dir_name," ",item['id'])
             if(not os.path.exists(dir_name)):
@@ -958,67 +980,42 @@ def destroyToken():
     
     os.remove(token)
 
-@cli.command('download',short_help='download any file whose file ID is known')
-@click.option('--fid',prompt=True,help='give file id of the file')
+@cli.command('clone',short_help='download any file whose file ID is known')
+@click.option('--link',prompt=True,help='give file id of the file')
 @click.option('--expas',is_flag=bool,help='export flag as a particular type')
-def download(fid,expas):
-    token = os.path.join(dirpath,'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
-    if not expas:
-        request = service.files().get_media(fileId=fid)
+def download(link,expas):
+    if 'open' in link:
+        fid = link.split('=')[-1]
     else:
-        mimeTypes={
-    		"ods":'application/vnd.oasis.opendocument.spreadsheet',
-    		"csv":'text/plain',
-    		"tmpl":'text/plain',
-    		"pdf": 'application/pdf',
-    		"php":'application/x-httpd-php',
-    		"jpg":'image/jpeg',
-    		"png":'image/png',
-    		"gif":'image/gif',
-    		"bmp":'image/bmp',
-    		"txt":'text/plain',
-    		"doc":'application/msword',
-    		"js":'text/js',
-    		"swf":'application/x-shockwave-flash',
-    		"mp3":'audio/mpeg',
-    		"zip":'application/zip',
-    		"rar":'application/rar',
-    		"tar":'application/tar',
-    		"arj":'application/arj',
-    		"cab":'application/cab',
-    		"html":'text/html',
-    		"htm":'text/html',
-    		"default":'application/octet-stream',
-    		"folder":'application/vnd.google-apps.folder'
-		}
-        promptMessage = 'Choose type to export to \n(press SPACE to mark, ENTER to continue, s to stop):'
-        title = promptMessage
-        options = [x for x in mimeTypes.keys()]
-        picker = Picker(options, title, indicator = '=>', default_index = 0)
-        picker.register_custom_handler(ord('s'),  go_back)
-        chosen, index = picker.start()
-        if index!=-1:
-            request = service.files().export_media(fileId=fid,mimeType=mimeTypes[chosen])
-        else:
-            sys.exit(0)
-    fh = io.BytesIO()
-    files = service.files().get(fileId=fid).execute()
-    click.echo("Preparing: "+click.style(files['name'],fg='red')+" for download")
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    with click.progressbar(length=100,label='downloading file') as bar:
-        pstatus=0
-        while done is False:
-            status, done = downloader.next_chunk()
-            status=int(status.progress() * 100)
-            bar.update(int(status-pstatus))
-            pstatus=status
-        with open('file.docs', 'wb') as f: #add dynamic name
-            f.write(fh.getvalue())
+        fid = link.split('/')[-1].split('?')[0]
+    clone = get_file(fid)
+    cwd = os.getcwd()
+    if clone['mimeType'] == 'application/vnd.google-apps.folder':
+        new_dir = os.path.join(cwd,clone['name'])
+        create_new(new_dir,fid)
+        pull_content(new_dir,fid)
+    else:
+        file_download(clone,cwd)
 
+@cli.command('add_remote',short_help='download any file whose file ID is known')
+@click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
+def create_remote(file):
+    """
+    add_remote: create remote equivalent for existing file/folder in local device
+    """
+    cwd = os.getcwd()
+    if file != None :
+        file_path = os.path.join(cwd,file)
+        if os.path.isfile(file_path):
+            upload_file(file,file_path,'root')
+        else:
+            click.secho("No such file exist: "+file_path,fg="red")
+            with click.Context(create_remote) as ctx:
+                click.echo(create_remote.get_help(ctx))
+    else:
+        pass
+    
+    
 
 @cli.command('mkdir',short_help='download any file whose file ID is known')
 @click.option('--name',prompt=True,help='give file id of the file')
