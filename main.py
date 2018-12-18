@@ -870,17 +870,6 @@ def push_content(cwd,fid):
 def cli():
     login()
 
-# @cli.command('login',short_help='create a new repo in Github and add remote origin to the local project.')
-# def loggin():
-#     with warnings.catch_warnings():
-#         token = os.path.join(dirpath,'token.json')
-#         store = file.Storage(token)
-#         creds = store.get()
-#         if not creds or creds.invalid:
-#             client_id = os.path.join(dirpath,'client_id.json')
-#             flow = client.flow_from_clientsecrets(client_id,SCOPES)
-#             creds = tools.run_flow(flow, store)
-
 @cli.command('view-files',short_help='create a new repo in Github and add remote origin to the local project.')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
 @click.option('--types',is_flag=bool,help='provide username in whose repos are to be listed.')
@@ -981,13 +970,20 @@ def destroyToken():
     os.remove(token)
 
 @cli.command('clone',short_help='download any file whose file ID is known')
-@click.option('--link',prompt=True,help='give file id of the file')
-@click.option('--expas',is_flag=bool,help='export flag as a particular type')
-def download(link,expas):
-    if 'open' in link:
-        fid = link.split('=')[-1]
+@click.option('--link',help='give sharing link of the file')
+@click.option('--id',help='give file id of the file')
+def download(link,expas,id):
+    if id != None :
+        fid = id
+    elif link != None :
+        if 'open' in link:
+            fid = link.split('=')[-1]
+        else:
+            fid = link.split('/')[-1].split('?')[0]
     else:
-        fid = link.split('/')[-1].split('?')[0]
+        with click.Context(download) as ctx:
+                click.echo(download.get_help(ctx))
+        sys.exit(0)
     clone = get_file(fid)
     cwd = os.getcwd()
     if clone['mimeType'] == 'application/vnd.google-apps.folder':
@@ -998,7 +994,7 @@ def download(link,expas):
         file_download(clone,cwd)
 
 @cli.command('add_remote',short_help='download any file whose file ID is known')
-@click.option('--file',help='specify the partcular file to uploaded else entire directory is uploadedc')
+@click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
 def create_remote(file):
     """
     add_remote: create remote equivalent for existing file/folder in local device
@@ -1017,40 +1013,27 @@ def create_remote(file):
         dir_cd,name = sep.join(cwd.split(sep)[:-1]),cwd.split(sep)[-1]
         child_cwd,child_id = create_dir(dir_cd,'root',name)
         push_content(child_cwd,child_id)
-    
-    
 
-@cli.command('mkdir',short_help='download any file whose file ID is known')
-@click.option('--name',prompt=True,help='give file id of the file')
-@click.option('--context',is_flag=bool,help='give file id of the file')
-def mkdir(name,context):
-    data = drive_data()
+@cli.command('rm',short_help='download any file whose file ID is known')
+@click.option('--file',help='specify the partcular file to deleted else entire directory is uploaded')
+@click.option('--remote',is_flag=bool,default=False,help='specify the partcular file to deleted else entire directory is uploaded')
+def delete(file,remote):
     cwd = os.getcwd()
-    if context and (cwd in data.keys()):
-        file_metadata = {
-            'name': name,
-            'mimeType': 'application/vnd.google-apps.folder',
-            'parents':[data[cwd]['id']]
-        }
+    if file != None:
+        file_path = os.path.join(cwd,file)
+        if os.path.isfile(file_path):
+            local_dir = get_child(cwd)
+            fid = local_dir[file]
+        else:
+            click.secho("No such file exist: "+file_path,fg="red")
+            with click.Context(delete) as ctx:
+                click.echo(delete.get_help(ctx))
     else:
-        file_metadata = {
-            'name': name,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
-    print(file_metadata)
-    token = os.path.join(dirpath,'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
-    fid = service.files().create(body=file_metadata,fields='id').execute()
-    os.mkdir(name)
-    fid['time']=time.time()
-    full_path = os.path.join(cwd,name)
-    #print(full_path)
-    data[full_path] = fid
-    #print(data)
-    drive_data(data)
-    click.secho("Created a syncable directory",fg='magenta')
+        data = drive_data()
+        fid = data[cwd]
+        data.pop(cwd,None)
+        drive_data(data)
+    delete_file(fid) #write delete file method
 
 @cli.command('ls',short_help='download any file whose file ID is known')
 def list_out():
