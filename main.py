@@ -998,7 +998,7 @@ def download(link,expas):
         file_download(clone,cwd)
 
 @cli.command('add_remote',short_help='download any file whose file ID is known')
-@click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
+@click.option('--file',help='specify the partcular file to uploaded else entire directory is uploadedc')
 def create_remote(file):
     """
     add_remote: create remote equivalent for existing file/folder in local device
@@ -1013,7 +1013,10 @@ def create_remote(file):
             with click.Context(create_remote) as ctx:
                 click.echo(create_remote.get_help(ctx))
     else:
-        pass
+        sep = os.sep
+        dir_cd,name = sep.join(cwd.split(sep)[:-1]),cwd.split(sep)[-1]
+        child_cwd,child_id = create_dir(dir_cd,'root',name)
+        push_content(child_cwd,child_id)
     
     
 
