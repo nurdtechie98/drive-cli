@@ -911,12 +911,12 @@ def push_content(cwd,fid):
 def cli():
     login()
 
-@cli.command('view-files',short_help='create a new repo in Github and add remote origin to the local project.')
+@cli.command('view-files',short_help='filter search files and file ID for files user has access to')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
 @click.option('--types',is_flag=bool,help='provide username in whose repos are to be listed.')
 def viewFile(name,types):
     """
-    Prints the names and ids of the first 10 files the user has access to.
+    view-files: Filter based list of the names and ids of the first 10 files the user has access to
     """
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
@@ -1000,6 +1000,9 @@ def viewFile(name,types):
 
 @cli.command('logout',short_help='logout from the account')
 def destroyToken():
+    '''
+    logout: logout from the account that has been logged in
+    '''
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
     creds = store.get()
@@ -1010,10 +1013,13 @@ def destroyToken():
     
     os.remove(token)
 
-@cli.command('clone',short_help='download any file using sharing link or file ID ')s
+@cli.command('clone',short_help='download any file using sharing link or file ID ')
 @click.option('--link',help='give sharing link of the file')
 @click.option('--id',help='give file id of the file')
 def download(link,expas,id):
+    '''
+    clone: download a file/folder  using either the sharing link or using the file ID  for the file
+    '''
     if id != None :
         fid = id
     elif link != None :
@@ -1055,10 +1061,13 @@ def create_remote(file):
         child_cwd,child_id = create_dir(dir_cd,'root',name)
         push_content(child_cwd,child_id)
 
-@cli.command('rm',short_help='delete a particular file')
+@cli.command('rm',short_help='delete a particular file in the drive')
 @click.option('--file',help='specify the partcular file to deleted else entire directory is deleted')
-@click.option('--remote',is_flag=bool,default=False,help='delete the file only in remote keep in local') #yet to add the function
+@click.option('--remote',is_flag=bool,help='delete the file only in remote keep in local') #yet to add the function
 def delete(file,remote):
+    '''
+    rm: delete a particular file/folder from the directory in the remote drive
+    '''
     cwd = os.getcwd()
     if file != None:
         file_path = os.path.join(cwd,file)
@@ -1069,17 +1078,20 @@ def delete(file,remote):
             click.secho("No such file exist: "+file_path,fg="red")
             with click.Context(delete) as ctx:
                 click.echo(delete.get_help(ctx))
+        cwd = file_path
     else:
         data = drive_data()
         fid = data[cwd]
         data.pop(cwd,None)
         drive_data(data)
-    delete_file(fid) #write delete file method
+    delete_file(fid)
+    if not remote:
+        os.remove(cwd)
 
 @cli.command('ls',short_help='list out all the files present in this directory in the drive')
 def list_out():
     """
-        Print files belonging to a folder.
+    ls: Print files belonging to a folder in the drive folder of the current directory
     """
     data = drive_data()
     token = os.path.join(dirpath,'token.json')
@@ -1089,6 +1101,9 @@ def list_out():
     page_token = None
     lis = []
     cwd = os.getcwd()
+    if cwd not in data.keys():
+        click.secho("following directory has not been added: \nuse drive add_remote ",fg='red')
+        sys.exit(0)
     query = "'"+data[cwd]['id']+"' in parents"
     #print(query)
     t = PrettyTable(['Name','File ID','Type'])  
@@ -1107,8 +1122,14 @@ def list_out():
 
 @cli.command('status',short_help='list changes commited since last sync')
 def status():
+    '''
+    status: get a change log of files changed since you had the last sync(push/pull/clone)
+    '''
     cwd = os.getcwd()
     data = drive_data()
+    if cwd not in data.keys():
+        click.secho("following directory has not been added: \nuse drive add_remote ",fg='red')
+        sys.exit(0)
     sync_time = data[cwd]['time']
     list_status(cwd,sync_time)
 
@@ -1116,14 +1137,23 @@ def status():
 def pull():
     data=drive_data()
     cwd=os.getcwd()
+    if cwd not in data.keys():
+        click.secho("following directory has not been added: \nuse drive add_remote ",fg='red')
+        sys.exit(0)
     fid=data[cwd]['id']
     syn_time=data[cwd]['time']
     pull_content(cwd,fid)
 
-@cli.command('push',short_help='get latest updates from online drive of the file')
+@cli.command('push',short_help='push modification from local files to the drive')
 def push():
+    '''
+    push the latest changes from your local folder that has been added/cloned to google drive.
+    '''
     data=drive_data()
     cwd=os.getcwd()
+    if cwd not in data.keys():
+        click.secho("following directory has not been added: \nuse drive add_remote ",fg='red')
+        sys.exit(0)
     fid=data[cwd]['id']
     syn_time=data[cwd]['time']
     push_content(cwd,fid)
