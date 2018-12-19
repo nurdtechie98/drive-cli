@@ -678,6 +678,18 @@ def push_needed(drive,item_path):
     local_time = os.path.getmtime(item_path)-float(19800.00)
     return drive_time<local_time
 
+def modified_or_created(sync_time,item_path):
+    mtime = os.path.getmtime(item_path)
+    ctime = os.path.getctime(item_path)
+    #print(ctime,mtime,sync_time)
+    if(ctime>sync_time):
+        click.echo("created: "+item_path)
+        return 1
+    elif(mtime>sync_time):
+        click.echo("modified: "+item_path)
+        return 1
+    return 0
+
 def create_new(cwd,fid,exist=False):
     if not exist:
         os.mkdir(cwd)
@@ -693,7 +705,10 @@ def delete_file(fid):
     creds = store.get()
     service = build('drive', 'v2', http=creds.authorize(Http()))
     fid = fid['id']
-    files = service.files().delete(fileId=fid).execute()
+    try:
+        service.files().delete(fileId=fid).execute()
+    except:
+        click.secho("Error Ocurred:\n make sure that you have appropriate access",fg='red')
 
 def get_file(fid):
     data=drive_data()
@@ -841,6 +856,24 @@ def pull_content(cwd,fid):
     data=drive_data(data)
     drive_data(data)
 
+def list_status(cwd,sync_time):
+    local_lis = os.listdir(cwd)
+    changes = 0
+    for item in local_lis:
+        item_path = os.path.join(cwd,item)
+        if(os.path.isdir(item_path)):
+            if(modified_or_created(sync_time,item_path)):
+                changes += 1
+                data = drive_data()
+                if item in data.keys(): 
+                    sync_time = data[item]
+                else:
+                    sync_time = float(0)
+                list_status(item_path,sync_time)  
+        else:
+            changes += modified_or_created(sync_time,item_path)
+    if changes == 0:
+        click.secho("No changes made since the last sync")
 
 def push_content(cwd,fid):
     drive_lis = get_child(cwd)
@@ -977,7 +1010,7 @@ def destroyToken():
     
     os.remove(token)
 
-@cli.command('clone',short_help='download any file whose file ID is known')
+@cli.command('clone',short_help='download any file using sharing link or file ID ')s
 @click.option('--link',help='give sharing link of the file')
 @click.option('--id',help='give file id of the file')
 def download(link,expas,id):
@@ -1001,7 +1034,7 @@ def download(link,expas,id):
     else:
         file_download(clone,cwd)
 
-@cli.command('add_remote',short_help='download any file whose file ID is known')
+@cli.command('add_remote',short_help='upload any existing file to drive')
 @click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
 def create_remote(file):
     """
@@ -1022,10 +1055,9 @@ def create_remote(file):
         child_cwd,child_id = create_dir(dir_cd,'root',name)
         push_content(child_cwd,child_id)
 
-#dlete from fid option
-@cli.command('rm',short_help='download any file whose file ID is known')
-@click.option('--file',help='specify the partcular file to deleted else entire directory is uploaded')
-@click.option('--remote',is_flag=bool,default=False,help='specify the partcular file to deleted else entire directory is uploaded')
+@cli.command('rm',short_help='delete a particular file')
+@click.option('--file',help='specify the partcular file to deleted else entire directory is deleted')
+@click.option('--remote',is_flag=bool,default=False,help='delete the file only in remote keep in local') #yet to add the function
 def delete(file,remote):
     cwd = os.getcwd()
     if file != None:
@@ -1044,7 +1076,7 @@ def delete(file,remote):
         drive_data(data)
     delete_file(fid) #write delete file method
 
-@cli.command('ls',short_help='download any file whose file ID is known')
+@cli.command('ls',short_help='list out all the files present in this directory in the drive')
 def list_out():
     """
         Print files belonging to a folder.
@@ -1072,6 +1104,13 @@ def list_out():
         if page_token is None:
             break
     print(t)
+
+@cli.command('status',short_help='list changes commited since last sync')
+def status():
+    cwd = os.getcwd()
+    data = drive_data()
+    sync_time = data[cwd]['time']
+    list_status(cwd,sync_time)
 
 @cli.command('pull',short_help='get latest updates from online drive of the file')
 def pull():
