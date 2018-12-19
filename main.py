@@ -687,6 +687,14 @@ def create_new(cwd,fid,exist=False):
     data[cwd]['time'] = time.time()
     drive_data(data)
 
+def delete_file(fid):
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v2', http=creds.authorize(Http()))
+    fid = fid['id']
+    files = service.files().delete(fileId=fid).execute()
+
 def get_file(fid):
     data=drive_data()
     token = os.path.join(dirpath,'token.json')
@@ -1014,6 +1022,7 @@ def create_remote(file):
         child_cwd,child_id = create_dir(dir_cd,'root',name)
         push_content(child_cwd,child_id)
 
+#dlete from fid option
 @cli.command('rm',short_help='download any file whose file ID is known')
 @click.option('--file',help='specify the partcular file to deleted else entire directory is uploaded')
 @click.option('--remote',is_flag=bool,default=False,help='specify the partcular file to deleted else entire directory is uploaded')
