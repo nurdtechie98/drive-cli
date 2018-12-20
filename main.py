@@ -20,7 +20,6 @@ from oauth2client import file, client, tools
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 SCOPES = 'https://www.googleapis.com/auth/drive'
-
 MIMETYPES={ 
             ".323":"text/h323" ,
             ".3g2":"video/3gpp2" ,
@@ -583,6 +582,8 @@ MIMETYPES={
             ".zip":"application/x-zip-compressed"
         }
 
+
+
 def login():
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
@@ -616,29 +617,58 @@ def drive_data(*argv):
 
 def get_request(service,fid,mimeType):
     if(re.match('^application/vnd\.google-apps\..+',mimeType)):
-        mimeTypes={
-    		"ods":'application/vnd.oasis.opendocument.spreadsheet',
-    		"csv":'text/plain',
-    		"tmpl":'text/plain',
-    		"pdf": 'application/pdf',
-    		"php":'application/x-httpd-php',
-    		"jpg":'image/jpeg',
-    		"png":'image/png',
-    		"gif":'image/gif',
-    		"bmp":'image/bmp',
-    		"txt":'text/plain',
-    		"doc":'application/msword',
-    		"js":'text/js',
-    		"swf":'application/x-shockwave-flash',
-    		"mp3":'audio/mpeg',
-    		"zip":'application/zip',
-    		"rar":'application/rar',
-    		"tar":'application/tar',
-    		"arj":'application/arj',
-    		"cab":'application/cab',
-    		"html":'text/html',
-    		"htm":'text/html',
-		}
+        if(mimeType == 'application/vnd.google-apps.document'):
+            mimeTypes={
+                "pdf": 'application/pdf',
+                "txt":'text/plain',
+                "doc":'application/msword',
+                "zip":'application/zip',
+                "html":'text/html',
+                "rtf":"application/rtf",
+                "odt":"application/vnd.oasis.opendocument.text"
+		    }
+        elif(mimeType == 'application/vnd.google-apps.spreadsheet'):
+            mimeTypes={
+                "pdf": 'application/pdf',
+                "xlsx" :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                "zip":'application/zip',
+                "html":'text/html',
+                "ods":'application/vnd.oasis.opendocument.spreadsheet',
+                "csv":'text/plain',
+                "tsv":"text/tab-separated-values" ,
+		    }
+        elif(mimeType == 'application/vnd.google-apps.presentation'):
+            mimeTypes={
+                "pdf": 'application/pdf',
+                "zip":'application/zip',
+                "html":'text/html',
+                "pptx":"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "plain txt":'text/plain'
+		    }
+        else:
+            mimeTypes={
+                "ods":'application/vnd.oasis.opendocument.spreadsheet',
+                "csv":'text/plain',
+                "tmpl":'text/plain',
+                "pdf": 'application/pdf',
+                "php":'application/x-httpd-php',
+                "jpg":'image/jpeg',
+                "png":'image/png',
+                "gif":'image/gif',
+                "bmp":'image/bmp',
+                "txt":'text/plain',
+                "doc":'application/msword',
+                "js":'text/js',
+                "swf":'application/x-shockwave-flash',
+                "mp3":'audio/mpeg',
+                "zip":'application/zip',
+                "rar":'application/rar',
+                "tar":'application/tar',
+                "arj":'application/arj',
+                "cab":'application/cab',
+                "html":'text/html',
+                "htm":'text/html'
+            }
         promptMessage = 'Choose type to export to \n(ENTER to select, s to stop):'
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
@@ -689,6 +719,16 @@ def modified_or_created(sync_time,item_path):
         click.echo("modified: "+item_path)
         return 1
     return 0
+
+def get_fid(inp):
+    if 'drive' in inp:
+        if 'open' in link:
+            fid = link.split('=')[-1]
+        else:
+            fid = link.split('/')[-1].split('?')[0]
+    else:
+        fid = inp
+    return inp
 
 def create_new(cwd,fid,exist=False):
     if not exist:
@@ -814,7 +854,6 @@ def upload_file(name,path,pid):
     return new_file
 
 def pull_content(cwd,fid):
-    #print(fid)
     data=drive_data()
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
@@ -822,8 +861,7 @@ def pull_content(cwd,fid):
     service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
     lis = []
-    query = "'"+data[cwd]['id']+"' in parents"
-    #print(query) 
+    query = "'"+data[cwd]['id']+"' in parents" 
     while True:
         children = service.files().list(q=query,
                                         spaces='drive',
@@ -841,7 +879,6 @@ def pull_content(cwd,fid):
             if((not os.path.exists(dir_name)) or write_needed(dir_name,item,data[cwd]['time'])):
                 file_download(item,cwd,data[cwd]['time'])
         else:
-            #print(dir_name," ",item['id'])
             if(not os.path.exists(dir_name)):
                 click.secho("creating: "+dir_name)
                 os.mkdir(dir_name)
@@ -905,11 +942,20 @@ def push_content(cwd,fid):
     data = drive_data()
     data[cwd]['time']=time.time()
     drive_data(data)
-                
-                
+
+
+
 @click.group()
 def cli():
-    login()
+    #login()
+    pass
+
+@cli.command('login',short_help='filter search files and file ID for files user has access to')
+def loggin():
+    click.echo('testing')
+    cwd = os.getcwd()
+    main = os.path.join(cwd,'main.py')
+    exec('python3 '+main)
 
 @cli.command('view-files',short_help='filter search files and file ID for files user has access to')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
@@ -998,21 +1044,6 @@ def viewFile(name,types):
         click.confirm('Do you want to continue?',abort=True)
         click.clear()
 
-@cli.command('logout',short_help='logout from the account')
-def destroyToken():
-    '''
-    logout: logout from the account that has been logged in
-    '''
-    token = os.path.join(dirpath,'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    if creds:
-        requests.post('https://accounts.google.com/o/oauth2/revoke',
-        params={'token': creds.access_token},
-        headers = {'content-type': 'application/x-www-form-urlencoded'})
-    
-    os.remove(token)
-
 @cli.command('clone',short_help='download any file using sharing link or file ID ')
 @click.option('--link',help='give sharing link of the file')
 @click.option('--id',help='give file id of the file')
@@ -1063,30 +1094,35 @@ def create_remote(file):
 
 @cli.command('rm',short_help='delete a particular file in the drive')
 @click.option('--file',help='specify the partcular file to deleted else entire directory is deleted')
-@click.option('--remote',is_flag=bool,help='delete the file only in remote keep in local') #yet to add the function
+@click.option('--remote',is_flag=bool,help='delete the file only in remote keep in local')
+@click.option('--id',help='delete file directly using id or sharing link, can be used even for unlinked files')
 def delete(file,remote):
     '''
     rm: delete a particular file/folder from the directory in the remote drive
     '''
     cwd = os.getcwd()
-    if file != None:
-        file_path = os.path.join(cwd,file)
-        if os.path.isfile(file_path):
-            local_dir = get_child(cwd)
-            fid = local_dir[file]
+    if id == None:
+        if file != None:
+            file_path = os.path.join(cwd,file)
+            if os.path.isfile(file_path):
+                local_dir = get_child(cwd)
+                fid = local_dir[file]
+            else:
+                click.secho("No such file exist: "+file_path,fg="red")
+                with click.Context(delete) as ctx:
+                    click.echo(delete.get_help(ctx))
+            cwd = file_path
         else:
-            click.secho("No such file exist: "+file_path,fg="red")
-            with click.Context(delete) as ctx:
-                click.echo(delete.get_help(ctx))
-        cwd = file_path
+            data = drive_data()
+            fid = data[cwd]
+            data.pop(cwd,None)
+            drive_data(data)
+        delete_file(fid)
+        if not remote:
+            os.remove(cwd)
     else:
-        data = drive_data()
-        fid = data[cwd]
-        data.pop(cwd,None)
-        drive_data(data)
-    delete_file(fid)
-    if not remote:
-        os.remove(cwd)
+        fid = get_fid(id)
+        delete_file(fid)
 
 @cli.command('ls',short_help='list out all the files present in this directory in the drive')
 def list_out():
@@ -1157,6 +1193,21 @@ def push():
     fid=data[cwd]['id']
     syn_time=data[cwd]['time']
     push_content(cwd,fid)
+
+@cli.command('logout',short_help='logout from the account')
+def destroyToken():
+    '''
+    logout: logout from the account that has been logged in
+    '''
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    if creds:
+        requests.post('https://accounts.google.com/o/oauth2/revoke',
+        params={'token': creds.access_token},
+        headers = {'content-type': 'application/x-www-form-urlencoded'})
+    
+    os.remove(token)
 
 if __name__ == '__main__':
     login()

@@ -26,11 +26,13 @@ setup(
         'windows-curses;platform_system=="Windows"',
         'pick',
         'google-api-python-client',
-        'oauth2client'
+        'oauth2client',
+        'prettytable',
+        'httplib2'
     ],
     entry_points='''
         [console_scripts]
         drive=main:cli
-
+        
     ''',
 )
