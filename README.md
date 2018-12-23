@@ -1,6 +1,6 @@
 <p align="center">
   <a href="" rel="noopener">
- <img height=100px src="./logo.svg" alt="Briefly-logo"></a>
+ <img height=200px src="./logo.svg" alt="Briefly-logo"></a>
 </p>
 
 <h1 align="center">Drive Cli</h1>
