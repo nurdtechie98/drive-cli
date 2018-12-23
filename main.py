@@ -947,15 +947,7 @@ def push_content(cwd,fid):
 
 @click.group()
 def cli():
-    #login()
-    pass
-
-@cli.command('login',short_help='filter search files and file ID for files user has access to')
-def loggin():
-    click.echo('testing')
-    cwd = os.getcwd()
-    main = os.path.join(cwd,'main.py')
-    exec('python3 '+main)
+    login()
 
 @cli.command('view-files',short_help='filter search files and file ID for files user has access to')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
@@ -1047,7 +1039,7 @@ def viewFile(name,types):
 @cli.command('clone',short_help='download any file using sharing link or file ID ')
 @click.option('--link',help='give sharing link of the file')
 @click.option('--id',help='give file id of the file')
-def download(link,expas,id):
+def download(link,id):
     '''
     clone: download a file/folder  using either the sharing link or using the file ID  for the file
     '''
