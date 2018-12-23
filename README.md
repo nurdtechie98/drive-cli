@@ -40,7 +40,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
 * Install the requirements
 ```sh
     $ cd drive-cli
-    $ pip install setup.py
+    $ pip install -e
 ```
 * Login to Your Account
 ```sh
@@ -52,9 +52,17 @@ Get the ability to access **Google Drive** without leaving your terminal.
 * Use `drive --help` for listing all the commands
 * Use  `drive [command] --help` to list all the options available for each command
 ------------------------------------------
-
 ### Contributing
 
  * We're are open to `enhancements` & `bug-fixes` :smile:.
  * Feel free to add issues and submit patches
+
+------------------------------------------
+### Author
+Chirag Shetty - [nurdtechie98](https://github.com/nurdtechie98)
+See also the list of [contributors](https://github.com/nurdtechie98/drive-cli/graphs/contributors) who participated in this project.
+
+------------------------------------------
+### License
+This project is licensed under the MIT - see the LICENSE(./LICENSE) file for details
 
