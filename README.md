@@ -64,5 +64,5 @@ See also the list of [contributors](https://github.com/nurdtechie98/drive-cli/gr
 
 ------------------------------------------
 ### License
-This project is licensed under the MIT - see the LICENSE(./LICENSE) file for details
+This project is licensed under the MIT - see the [LICENSE](./LICENSE) file for details
 
