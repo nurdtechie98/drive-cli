@@ -38,7 +38,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
 * Install the requirements
 ```sh
     $ cd drive-cli
-    $ pip install -e
+    $ pip install . #note the dot
 ```
 * Login to Your Account
 ```sh
@@ -50,6 +50,12 @@ Get the ability to access **Google Drive** without leaving your terminal.
 * Once installation and login is done, just use `drive` and the required command.
 * Use `drive --help` for listing all the commands
 * Use  `drive [command] --help` to list all the options available for each command
+------------------------------------------
+### Uninstalling
+
+```sh
+    $ pip uninstall Drive_CLI
+```
 ------------------------------------------
 ### Contributing
 
