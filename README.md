@@ -60,6 +60,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
 ------------------------------------------
 ### Author
 Chirag Shetty - [nurdtechie98](https://github.com/nurdtechie98)
+
 See also the list of [contributors](https://github.com/nurdtechie98/drive-cli/graphs/contributors) who participated in this project.
 
 ------------------------------------------
