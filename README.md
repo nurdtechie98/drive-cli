@@ -35,8 +35,6 @@ Get the ability to access **Google Drive** without leaving your terminal.
 ```sh
         $ git clone https://github.com/nurdtechie98/drive-cli.git
 ```
-* Create your [OAuth ClientID](https://console.cloud.google.com/apis/credentials/oauthclient), download JSON file and place it inside drive-cli directory.
-* Make Sure to enable [Google drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com?q=drive)
 * Install the requirements
 ```sh
     $ cd drive-cli
@@ -46,6 +44,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
 ```sh
     $ python main.py
 ```
+> select the account to login with and you are good to go :dancers:
 ------------------------------------------
 ### Usage
 * Once installation and login is done, just use `drive` and the required command.

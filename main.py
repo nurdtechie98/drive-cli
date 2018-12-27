@@ -589,7 +589,7 @@ def login():
     store = file.Storage(token)
     creds = store.get()
     if not creds or creds.invalid:
-        client_id = os.path.join(dirpath,'client_id.json')
+        client_id = os.path.join(dirpath,'config','oauth.json')
         flow = client.flow_from_clientsecrets(client_id,SCOPES)
         creds = tools.run_flow(flow, store)  
 
