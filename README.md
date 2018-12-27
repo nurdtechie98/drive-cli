@@ -47,7 +47,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
     $ python main.py
 ```
 ------------------------------------------
-#### Usage
+### Usage
 * Once installation and login is done, just use `drive` and the required command.
 * Use `drive --help` for listing all the commands
 * Use  `drive [command] --help` to list all the options available for each command
