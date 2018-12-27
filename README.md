@@ -13,9 +13,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![HitCount](http://hits.dwyl.io/nurdtechie98/drive-cli.svg)](http://hits.dwyl.io/nurdtechie98/drive-cli)
 
-Get the ability to access **Google Drive** without leaving your terminal.
+<h4>Get the ability to access <strong>Google Drive</strong> without leaving your terminal.</h4>
 
 </div>
+-----------------------------------------
+### Inspiration
+
+* Google Drive has become a vital part of our day to day life. As much as non-programmer use it, so do programmers in several situations,where we need not use git/github. 
+
+* Drive-CLI is a command line utility tool for google drive which helps you access,sync, download,upload.. directly to your drive without leaving the command line. The best part being the commands are similar to git cli so that you can easily remember them :massage:  
+
 
 
 ------------------------------------------
