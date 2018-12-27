@@ -38,7 +38,7 @@ Get the ability to access **Google Drive** without leaving your terminal.
 * Install the requirements
 ```sh
     $ cd drive-cli
-    $ pip install . #note the dot
+    $ pip install -e . #note the dot
 ```
 * Login to Your Account
 ```sh
