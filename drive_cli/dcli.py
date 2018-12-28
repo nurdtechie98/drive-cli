@@ -1147,7 +1147,7 @@ def delete(file,remote,id):
         fid = get_fid(id)
         delete_file(fid)
 
-@cli.command('ls',short_help='list out all the files present in this directory in the drive')
+@cli.command('ls',short_help='list out all the files present in this directory in the drive for tracked directories')
 def list_out():
     """
     ls: Print files belonging to a folder in the drive folder of the current directory
