@@ -1,6 +1,6 @@
 <p align="center">
   <a href="" rel="noopener">
- <img height=200px src="./logo.svg" alt="Briefly-logo"></a>
+ <img height=200px src="https://i.imgur.com/QEcBZSh.png" alt="Briefly-logo"></a>
 </p>
 
 <h1 align="center">Drive Cli</h1>
@@ -38,31 +38,36 @@
 
 ------------------------------------------
 ### Installation
-
-* Clone the directory
+* For Usage
 ```sh
+    #install using pip 
+    $ pip uninstall drive-cli
+```
+* For Development
+    * clone the repo
+    ```sh
         $ git clone https://github.com/nurdtechie98/drive-cli.git
-```
-* Install the requirements
-```sh
-    $ cd drive-cli
-    $ pip install -e . #note the dot
-```
-* Login to Your Account
-```sh
-    $ python main.py
-```
-> select the account to login with and you are good to go :dancers:
+    ```
+    * get your client_secret.json from [Oauth](https://console.cloud.google.com/apis/credentials/oauthclient). Make sure to enable [Drive Api](https://console.cloud.google.com/apis/library/drive.googleapis.com?q=Drive) for the project.
+    * rename the client secrest as oauth.json and place it inside [drive_cli](./drive_cli) directory.
+    * install the package
+    ```sh
+        # move into package directory
+        $ cd drive-cli
+        # install package in edit mode
+        $ pip install -e . #note the dot
+    ```
+
 ------------------------------------------
 ### Usage
-* Once installation and login is done, just use `drive` and the required command.
+* Once installation is done, just use `drive` and the required command.
 * Use `drive --help` for listing all the commands
 * Use  `drive [command] --help` to list all the options available for each command
 ------------------------------------------
 ### Uninstalling
 
 ```sh
-    $ pip uninstall Drive_CLI
+    $ pip uninstall drive-cli
 ```
 ------------------------------------------
 ### Contributing

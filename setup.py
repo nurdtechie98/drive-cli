@@ -38,12 +38,12 @@ setup(
 		]
 	},
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: End Users/Desktop",
-		"Natural Language :: English",
-        "Topic :: Utilities",
+        "Programming Language ::Python",
+        "Development Status ::3 - Alpha",
+        "Intended Audience ::End Users/Desktop",
+		"Natural Language ::English",
+        "Topic ::Utilities",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System ::OS Independent",
      ],
 )
