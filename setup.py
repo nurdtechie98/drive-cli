@@ -1,5 +1,6 @@
 from drive_cli import __version__
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 
 def readme():
     try:
@@ -31,6 +32,7 @@ setup(
         'oauth2client',
         'prettytable',
         'httplib2',
+        'pyfiglet'
     ],
     entry_points={
 		'console_scripts': [
