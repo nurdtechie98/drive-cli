@@ -41,7 +41,7 @@
 * For Usage
 ```sh
     #install using pip 
-    $ pip uninstall drive-cli
+    $ pip install drive-cli
 ```
 * For Development
     * clone the repo
@@ -49,7 +49,7 @@
         $ git clone https://github.com/nurdtechie98/drive-cli.git
     ```
     * get your client_secret.json from [Oauth](https://console.cloud.google.com/apis/credentials/oauthclient). Make sure to enable [Drive Api](https://console.cloud.google.com/apis/library/drive.googleapis.com?q=Drive) for the project.
-    * rename the client secrest as oauth.json and place it inside [drive_cli](./drive_cli) directory.
+    * rename the client secret as oauth.json and place it inside [drive_cli](./drive_cli) directory.
     * install the package
     ```sh
         # move into package directory
