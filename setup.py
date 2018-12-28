@@ -1,3 +1,4 @@
+from drive_cli import __version__
 from setuptools import setup, find_packages
 
 def readme():
@@ -8,9 +9,10 @@ def readme():
         pass
 
 setup(
-    name ='Drive-CLI',
-    version ='1.0',
-    description = 'Upload your files to Google Drive without leaving the terminal',
+    name ='drive_cli',
+    version='.'.join(str(i) for i in __version__),
+    description = 'CLI client for Google Drive',
+    url='https://github.com/nurdtechie98/drive-cli',
     author = 'Chirag Shetty',
     author_email = 'nurdtechie98@gmail.com',
 
@@ -28,11 +30,20 @@ setup(
         'google-api-python-client',
         'oauth2client',
         'prettytable',
-        'httplib2'
+        'httplib2',
     ],
-    entry_points='''
-        [console_scripts]
-        drive=main:cli
-        
-    ''',
+    entry_points={
+		'console_scripts': [
+			'drive=drive_cli.dcli:cli'
+		]
+	},
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: End Users/Desktop",
+		"Natural Language :: English",
+        "Topic :: Utilities",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+     ],
 )

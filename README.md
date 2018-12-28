@@ -23,8 +23,6 @@
 
 * Drive-CLI is a command line utility tool for google drive which helps you access,sync, download,upload.. directly to your drive without leaving the command line. The best part being the commands are similar to git cli so that you can easily remember them :massage:  
 
-
-
 ------------------------------------------
 ### Features
 

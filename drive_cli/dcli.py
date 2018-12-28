@@ -582,16 +582,15 @@ MIMETYPES={
             ".zip":"application/x-zip-compressed"
         }
 
-
-
 def login():
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
     creds = store.get()
     if not creds or creds.invalid:
-        client_id = os.path.join(dirpath,'config','oauth.json')
+        client_id = os.path.join(dirpath,'oauth.json')
         flow = client.flow_from_clientsecrets(client_id,SCOPES)
-        creds = tools.run_flow(flow, store)  
+        flags=tools.argparser.parse_args(args=[])
+        creds = tools.run_flow(flow, store,flags) 
 
 def go_back(picker):
 	return None, -1
@@ -783,6 +782,21 @@ def get_child(cwd):
             break
     return drive_lis
 
+def get_child_id(pid,item):
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    page_token = None
+    query = "'"+pid+"' in parents and"
+    query += " name = '"+item+"'"
+    response = service.files().list(q=query,
+                                        spaces='drive',
+                                        fields='nextPageToken, files(id, name)',
+                                        pageToken=page_token).execute()
+    fils = response.get('files', [])[0]
+    return fils.get('id')
+
 def create_dir(cwd,pid,name):
     file_metadata = {
             'name': name,
@@ -800,7 +814,7 @@ def create_dir(cwd,pid,name):
     data = drive_data()
     data[full_path] = fid
     drive_data(data)
-    click.secho("Created a syncable directory",fg='magenta')
+    click.secho("Created a tracked directory",fg='magenta')
     return full_path,fid['id']
 
 def file_download(item,cwd,sync_time=time.time()):
@@ -849,6 +863,18 @@ def upload_file(name,path,pid):
                     }
     media = MediaFileUpload(path,mimetype=file_mimeType)
     new_file = service.files().create(body=file_metadata,
+                                        media_body=media,
+                                        fields='id').execute()
+    return new_file
+
+def update_file(name,path,fid):
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    file_mimeType = identify_mimetype(name)
+    media = MediaFileUpload(path,mimetype=file_mimeType)
+    new_file = service.files().update(fileId=fid,
                                         media_body=media,
                                         fields='id').execute()
     return new_file
@@ -938,7 +964,8 @@ def push_content(cwd,fid):
             else:
                 if(push_needed(drive_lis[item],item_path)):
                     click.secho("updating "+item)
-                    #update_file(item,item_path,fid)
+                    fid = get_child_id(fid,item)
+                    update_file(item,item_path,fid)
     data = drive_data()
     data[cwd]['time']=time.time()
     drive_data(data)
@@ -948,6 +975,10 @@ def push_content(cwd,fid):
 @click.group()
 def cli():
     login()
+
+@cli.command('login',short_help='login to your google account and authenticate the service')
+def loggin():
+    pass
 
 @cli.command('view-files',short_help='filter search files and file ID for files user has access to')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
@@ -1036,7 +1067,7 @@ def viewFile(name,types):
         click.confirm('Do you want to continue?',abort=True)
         click.clear()
 
-@cli.command('clone',short_help='download any file using sharing link or file ID ')
+@cli.command('clone',short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
 @click.option('--link',help='give sharing link of the file')
 @click.option('--id',help='give file id of the file')
 def download(link,id):
@@ -1065,15 +1096,18 @@ def download(link,id):
 
 @cli.command('add_remote',short_help='upload any existing file to drive')
 @click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
-def create_remote(file):
+@click.option('--pid',help='specify particular folder id/sharing_link of the folder under which remote must must be added')
+def create_remote(file,pid):
     """
     add_remote: create remote equivalent for existing file/folder in local device
     """
     cwd = os.getcwd()
+    if pid == None :
+        pid = 'root'
     if file != None :
         file_path = os.path.join(cwd,file)
         if os.path.isfile(file_path):
-            upload_file(file,file_path,'root')
+            upload_file(file,file_path,pid)
         else:
             click.secho("No such file exist: "+file_path,fg="red")
             with click.Context(create_remote) as ctx:
@@ -1081,14 +1115,13 @@ def create_remote(file):
     else:
         sep = os.sep
         dir_cd,name = sep.join(cwd.split(sep)[:-1]),cwd.split(sep)[-1]
-        child_cwd,child_id = create_dir(dir_cd,'root',name)
+        child_cwd,child_id = create_dir(dir_cd,pid,name)
         push_content(child_cwd,child_id)
 
-@cli.command('rm',short_help='delete a particular file in the drive')
+@cli.command('rm',short_help='delete a particular file in drive')
 @click.option('--file',help='specify the partcular file to deleted else entire directory is deleted')
-@click.option('--remote',is_flag=bool,help='delete the file only in remote keep in local')
-@click.option('--id',help='delete file directly using id or sharing link, can be used even for unlinked files')
-def delete(file,remote):
+@click.option('--id',help='delete untracked file directly using id or sharing link, can be used even for unlinked files')
+def delete(file,remote,id):
     '''
     rm: delete a particular file/folder from the directory in the remote drive
     '''
@@ -1110,8 +1143,6 @@ def delete(file,remote):
             data.pop(cwd,None)
             drive_data(data)
         delete_file(fid)
-        if not remote:
-            os.remove(cwd)
     else:
         fid = get_fid(id)
         delete_file(fid)
