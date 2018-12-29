@@ -60,9 +60,95 @@
 
 ------------------------------------------
 ### Usage
-* Once installation is done, just use `drive` and the required command.
-* Use `drive --help` for listing all the commands
-* Use  `drive [command] --help` to list all the options available for each command
+#### Help 
+Any command in particular command or the entire list of commands can be displayed using **help** command
+```sh
+$ drive --help
+
+Usage: drive [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  add_remote  upload any existing file to drive
+  clone       download any file using sharing link or file ID it will be
+              automatically tracked henceforth
+  login       login to your google account and authenticate the service
+  logout      logout from the account logged in with
+  ls          list out all the files present in this directory in the drive
+              for tracked directories
+  pull        get latest updates from online drive of the file
+  push        push modification from local files to the drive
+  rm          delete a particular file in drive
+  status      list changes commited since last sync
+  view-files  filter search files and file ID for files user has access to
+
+```
+#### Add Remote
+Existing files or folders that have not been added to drive can be added and get tracked. 
+Incase you need to add a particular file use file flag.
+The file folder can also be added inside particular parent folder in the drive using the file id of the folder
+
+```sh
+# adding entire folder named test to drive
+$ cd test
+$ drive add_remote
+Created a tracked directory
+uploading .DS_Store
+uploading main.js
+uploading test.html
+uploading style.css
+
+# adding a particular file(mailer.py) in current directory
+$ drive add_remote --file mailer.py
+uploaded mailer.py
+
+#adding the file or folder inside particular parent file(test) using its file id
+$ drive add_remote --file mailer.py --pid 1RJOWpW5MuP9RXpgZbp9OdauhaBtJd49g
+uploaded mailer.py
+content added under directory test
+
+```
+
+#### Clone
+Download a file or folder present in drive using its file id or its sharing link. In case it is a folder it gets tracked.
+
+```sh
+# using file id note: since it is goodle doc it will be asked for a choice to select from
+$ drive clone --id 1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
+Choose type to export to
+ (ENTER to select, s to stop):
+
+ => pdf
+    txt
+    doc
+    zip
+    html
+    rtf
+    odt
+Preparing: watson script for download
+downloading file  [####################################]  100%
+completed download of watson script
+
+# using file sharing link
+$ drive clone --link https://docs.google.com/document/d/1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
+Choose type to export to
+ (ENTER to select, s to stop):
+
+ => pdf
+    txt
+    doc
+    zip
+    html
+    rtf
+    odt
+Preparing: watson script for download
+downloading file  [####################################]  100%
+completed download of watson script
+
+```
+
 ------------------------------------------
 ### Uninstalling
 

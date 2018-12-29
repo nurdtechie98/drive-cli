@@ -287,6 +287,7 @@ def file_download(item,cwd,sync_time=time.time()):
             pstatus=status
         with open(file_path, 'wb') as f: #add dynamic name
             f.write(fh.getvalue())
+    click.secho("completed download of "+fname,fg='yellow')
 
 def identify_mimetype(name):
     extension = "."+str(name.split('.')[-1])
@@ -310,6 +311,7 @@ def upload_file(name,path,pid):
     new_file = service.files().create(body=file_metadata,
                                         media_body=media,
                                         fields='id').execute()
+    click.secho("uploaded "+name,fg='yellow')
     return new_file
 
 def update_file(name,path,fid):
@@ -568,11 +570,15 @@ def create_remote(file,pid):
         dir_cd,name = sep.join(cwd.split(sep)[:-1]),cwd.split(sep)[-1]
         child_cwd,child_id = create_dir(dir_cd,pid,name)
         push_content(child_cwd,child_id)
+    if pid != None :
+        parent_file = get_file(pid)
+        parent_name = parent_file['name'] 
+        click.secho("content added under directory "+parent_name,fg='magenta')
 
 @cli.command('rm',short_help='delete a particular file in drive')
 @click.option('--file',help='specify the partcular file to deleted else entire directory is deleted')
 @click.option('--id',help='delete untracked file directly using id or sharing link, can be used even for unlinked files')
-def delete(file,remote,id):
+def delete(file,id):
     '''
     rm: delete a particular file/folder from the directory in the remote drive
     '''
