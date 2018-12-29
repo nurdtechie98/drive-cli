@@ -37,6 +37,13 @@
 - `push` :push the changes made in remote to drive
 
 ------------------------------------------
+### Demo
+<p align="center">
+    <img src="./Demo.gif">
+</p>
+
+
+------------------------------------------
 ### Installation
 * For Usage
 ```sh
@@ -115,7 +122,7 @@ content added under directory test
 Download a file or folder present in drive using its file id or its sharing link. In case it is a folder it gets tracked.
 
 ```sh
-# using file id note: since it is goodle doc it will be asked for a choice to select from
+# using file id note: since it is google doc it will be asked for a choice to select from
 $ drive clone --id 1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
 Choose type to export to
  (ENTER to select, s to stop):

@@ -149,18 +149,19 @@ def write_needed(dir_name,item,sync_time):
 
 def push_needed(drive,item_path):
     drive_time = time.mktime(time.strptime(drive['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
-    local_time = os.path.getmtime(item_path)-float(19800.00)
-    return drive_time<local_time
+    local_time = os.path.getmtime(item_path)-float(19801.00)
+    #print(drive_time<local_time)
+    return drive_time>local_time
 
 def modified_or_created(sync_time,item_path):
     mtime = os.path.getmtime(item_path)
     ctime = os.path.getctime(item_path)
-    #print(ctime,mtime,sync_time)
-    if(ctime>sync_time):
-        click.echo("created: "+item_path)
+    #print(ctime,mtime,sync_time,int(time.time()))
+    if(ctime>(sync_time+1.000)):
+        click.echo("changed: "+item_path)
         return 1
-    elif(mtime>sync_time):
-        click.echo("modified: "+item_path)
+    elif(mtime>(sync_time+1.000)):
+        click.echo("changed: "+item_path)
         return 1
     return 0
 
@@ -233,8 +234,8 @@ def get_child_id(pid,item):
     creds = store.get()
     service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
-    query = "'"+pid+"' in parents and"
-    query += " name = '"+item+"'"
+    query = "name = '"+item+"' and "
+    query = "'"+pid+"' in parents"
     response = service.files().list(q=query,
                                         spaces='drive',
                                         fields='nextPageToken, files(id, name)',
@@ -411,8 +412,9 @@ def push_content(cwd,fid):
             else:
                 if(push_needed(drive_lis[item],item_path)):
                     click.secho("updating "+item)
-                    fid = get_child_id(fid,item)
-                    update_file(item,item_path,fid)
+                    cid = get_child_id(fid,item)
+                    update_file(item,item_path,cid)
+                    click.secho("updating of "+item+" completed",fg='yellow')
     data = drive_data()
     data[cwd]['time']=time.time()
     drive_data(data)
