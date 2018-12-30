@@ -131,8 +131,8 @@ def get_request(service,fid,mimeType):
 def write_needed(dir_name,item,sync_time):
     drive_time = time.mktime(time.strptime(item['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
     local_time = os.path.getmtime(dir_name)
-    print(dir_name)
-    print(time.time(),"||",drive_timefloat(19800.00),"||",local_time,"||",sync_time)
+    #print(dir_name)
+    #print(time.time(),"||",drive_time-float(19800.00),"||",local_time,"||",sync_time)
     sync_time-=float(19800.00)
     local_time-=float(19800.00)
     c_time = time.time()-float(19800.00)
@@ -150,7 +150,7 @@ def write_needed(dir_name,item,sync_time):
 def push_needed(drive,item_path):
     drive_time = time.mktime(time.strptime(drive['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
     local_time = os.path.getmtime(item_path)-float(19801.00)
-    print(drive_time,"---",local_time)
+    #print(drive_time,"---",local_time)
     return drive_time>local_time
 
 def modified_or_created(sync_time,item_path):
