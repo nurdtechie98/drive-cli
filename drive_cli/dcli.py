@@ -128,14 +128,13 @@ def get_request(service,fid,mimeType):
         request = service.files().get_media(fileId=fid)
         return request,""
 
-def write_needed(dir_name,item,sync_time):
-    drive_time = time.mktime(time.strptime(item['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
+def write_needed(dir_name,item):
+    drive_time = time.mktime(time.strptime(item['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))+float(19800.00)
     local_time = os.path.getmtime(dir_name)
+    data = drive_data()
+    sync_time = data[dir_name]['time']
     #print(dir_name)
     #print(time.time(),"||",drive_time-float(19800.00),"||",local_time,"||",sync_time)
-    sync_time-=float(19800.00)
-    local_time-=float(19800.00)
-    c_time = time.time()-float(19800.00)
     if(sync_time<drive_time):
         if(sync_time<local_time):
             input=''
@@ -148,17 +147,26 @@ def write_needed(dir_name,item,sync_time):
     return False
 
 def push_needed(drive,item_path):
-    drive_time = time.mktime(time.strptime(drive['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
+    drive_time = time.mktime(time.strptime(drive['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))+float(19800.00)
     local_time = os.path.getmtime(item_path)-float(19801.00)
-    #print(drive_time,"---",local_time)
-    return drive_time>local_time
+    data = drive_data()
+    sync_time = data[item_path]['time']
+    if sync_time < local_time:
+        if sync_time < drive_time :
+            input=''
+            while(input!='s' and input!='o'):
+                input = click.prompt("Conflict: both local and online copy of "+dir_name+" has been modified\npress o to OVERWRITE s to SKIP")
+            if(input=='o'):
+                return True
+        else:
+            return True
+    return False
 
 def modified_or_created(sync_time,item_path):
     mtime = os.path.getmtime(item_path)
-    ctime = os.path.getctime(item_path)
-    #print(ctime,mtime,sync_time,int(time.time()))
-    if(ctime>(sync_time+1.000)):
-        click.secho("changed: "+item_path,fg='blue')
+    data = drive_data()
+    if item_path not in data.keys():
+        click.secho("created: "+item_path,fg='green')
         return 1
     elif(mtime>(sync_time+1.000)):
         click.secho("changed: "+item_path,fg='blue')
@@ -275,7 +283,7 @@ def file_download(item,cwd,sync_time=time.time()):
     click.echo("Preparing: "+click.style(fname,fg='red')+" for download")
     request,ext= get_request(service,fid,item['mimeType'])
     file_path=(os.path.join(cwd,fname)+ext)
-    if((os.path.exists(file_path)) and (not write_needed(file_path,item,sync_time))):
+    if((os.path.exists(file_path)) and (not write_needed(file_path,item))):
         return
     downloader = MediaIoBaseDownload(fh, request)
     done = False
@@ -288,6 +296,9 @@ def file_download(item,cwd,sync_time=time.time()):
             pstatus=status
         with open(file_path, 'wb') as f: #add dynamic name
             f.write(fh.getvalue())
+    data = drive_data()
+    data[file_path] = {'id':item['id'],'time':time.time()}
+    drive_data(data)
     click.secho("completed download of "+fname,fg='yellow')
 
 def identify_mimetype(name):
@@ -312,6 +323,9 @@ def upload_file(name,path,pid):
     new_file = service.files().create(body=file_metadata,
                                         media_body=media,
                                         fields='id').execute()
+    data = drive_data()
+    data[path] = {'id':new_file['id'],'time':time.time()}
+    drive_data(data)
     click.secho("uploaded "+name,fg='yellow')
     return new_file
 
@@ -325,6 +339,9 @@ def update_file(name,path,fid):
     new_file = service.files().update(fileId=fid,
                                         media_body=media,
                                         fields='id').execute()
+    data = drive_data()
+    data[path]['time'] = {'time':time.time()}
+    drive_data(data)
     return new_file
 
 def pull_content(cwd,fid):
@@ -350,7 +367,7 @@ def pull_content(cwd,fid):
     for item in lis:
         dir_name = os.path.join(cwd,item['name'])
         if(item['mimeType']!='application/vnd.google-apps.folder'):
-            if((not os.path.exists(dir_name)) or write_needed(dir_name,item,data[cwd]['time'])):
+            if((not os.path.exists(dir_name)) or write_needed(dir_name,item)):
                 file_download(item,cwd,data[cwd]['time'])
         else:
             if(not os.path.exists(dir_name)):
@@ -680,7 +697,10 @@ def push():
         sys.exit(0)
     fid=data[cwd]['id']
     syn_time=data[cwd]['time']
+    current_root = get_file(fid) #can be avoided
+    click.secho("checking for changes in '"+current_root['name']+"' ....",fg='magenta')
     push_content(cwd,fid)
+    click.secho("Working directory is clean",fg="green")
 
 @cli.command('logout',short_help='logout from the account logged in with')
 def destroyToken():
