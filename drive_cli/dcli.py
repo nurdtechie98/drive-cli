@@ -131,8 +131,8 @@ def get_request(service,fid,mimeType):
 def write_needed(dir_name,item,sync_time):
     drive_time = time.mktime(time.strptime(item['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
     local_time = os.path.getmtime(dir_name)
-    #print(dir_name)
-    #print(time.time(),"||",drive_time,"||",local_time,"||",sync_time)
+    print(dir_name)
+    print(time.time(),"||",drive_timefloat(19800.00),"||",local_time,"||",sync_time)
     sync_time-=float(19800.00)
     local_time-=float(19800.00)
     c_time = time.time()-float(19800.00)
@@ -150,7 +150,7 @@ def write_needed(dir_name,item,sync_time):
 def push_needed(drive,item_path):
     drive_time = time.mktime(time.strptime(drive['modifiedTime'],'%Y-%m-%dT%H:%M:%S.%fZ'))
     local_time = os.path.getmtime(item_path)-float(19801.00)
-    #print(drive_time<local_time)
+    print(drive_time,"---",local_time)
     return drive_time>local_time
 
 def modified_or_created(sync_time,item_path):
@@ -158,22 +158,22 @@ def modified_or_created(sync_time,item_path):
     ctime = os.path.getctime(item_path)
     #print(ctime,mtime,sync_time,int(time.time()))
     if(ctime>(sync_time+1.000)):
-        click.echo("changed: "+item_path)
+        click.secho("changed: "+item_path,fg='blue')
         return 1
     elif(mtime>(sync_time+1.000)):
-        click.echo("changed: "+item_path)
+        click.secho("changed: "+item_path,fg='blue')
         return 1
     return 0
 
 def get_fid(inp):
     if 'drive' in inp:
-        if 'open' in link:
-            fid = link.split('=')[-1]
+        if 'open' in inp:
+            fid = inp.split('=')[-1]
         else:
-            fid = link.split('/')[-1].split('?')[0]
+            fid = inp.split('/')[-1].split('?')[0]
     else:
         fid = inp
-    return inp
+    return fid
 
 def create_new(cwd,fid,exist=False):
     if not exist:
@@ -407,7 +407,7 @@ def push_content(cwd,fid):
         else:
             item_path = os.path.join(cwd,item)
             if item not in drive_lis.keys():
-                click.secho("uploading "+item)
+                click.secho("uploading "+item+" ....")
                 upload_file(item,item_path,fid)
             else:
                 if(push_needed(drive_lis[item],item_path)):
@@ -542,12 +542,14 @@ def download(link,id):
         sys.exit(0)
     clone = get_file(fid)
     cwd = os.getcwd()
+    click.secho("cloning into '"+clone['name']+"' .....",fg='magenta')
     if clone['mimeType'] == 'application/vnd.google-apps.folder':
         new_dir = os.path.join(cwd,clone['name'])
         create_new(new_dir,fid)
         pull_content(new_dir,fid)
     else:
         file_download(clone,cwd)
+    click.secho("cloning of "+clone['name']+' completed',fg='yellow')
 
 @cli.command('add_remote',short_help='upload any existing file to drive')
 @click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
@@ -624,6 +626,7 @@ def list_out():
         sys.exit(0)
     query = "'"+data[cwd]['id']+"' in parents"
     #print(query)
+    click.secho('listing down files in drive ....',fg='magenta')
     t = PrettyTable(['Name','File ID','Type'])  
     while True:
         children = service.files().list(q=query,
@@ -660,7 +663,10 @@ def pull():
         sys.exit(0)
     fid=data[cwd]['id']
     syn_time=data[cwd]['time']
+    current_root = get_file(fid)
+    click.secho("checking for changes in '"+current_root['name']+"' ....",fg='magenta')
     pull_content(cwd,fid)
+    click.secho(current_root['name']+" is up to date with drive",fg='yellow')
 
 @cli.command('push',short_help='push modification from local files to the drive')
 def push():
