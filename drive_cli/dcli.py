@@ -183,9 +183,12 @@ def get_fid(inp):
         fid = inp
     return fid
 
-def create_new(cwd,fid,exist=False):
-    if not exist:
+def create_new(cwd,fid):
+    if not os.path.exists(cwd):
         os.mkdir(cwd)
+    else:
+        click.secho('file '+cwd+' already exists! remove the existing file and retry',fg='red')
+        sys.exit(0)
     data = drive_data()
     data[cwd] = {}
     data[cwd]['id'] = fid
@@ -449,7 +452,8 @@ def loggin():
 @cli.command('view-files',short_help='filter search files and file ID for files user has access to')
 @click.option('--name',is_flag=bool,help='provide username in whose repos are to be listed.')
 @click.option('--types',is_flag=bool,help='provide username in whose repos are to be listed.')
-def viewFile(name,types):
+@click.option('--pid',is_flag=bool,help='provide parent file ID or sharing link and list its child file/folders.')
+def viewFile(name,types,pid):
     """
     view-files: Filter based list of the names and ids of the first 10 files the user has access to
     """
@@ -518,6 +522,12 @@ def viewFile(name,types):
             query+=")"
         if (not name) and types:
             query=query[4:]
+    if pid:
+         parent=click.prompt('enter the fid of parent or  sharing link')
+         fid = get_fid(parent)
+         if (name != False) or (types != False) :
+             query+=" and "
+         query+="'"+fid+"' in parents"
     i = 1
     while True:
         response = service.files().list(q=query,
@@ -566,7 +576,7 @@ def download(link,id):
         pull_content(new_dir,fid)
     else:
         file_download(clone,cwd)
-    click.secho("cloning of "+clone['name']+' completed',fg='yellow')
+    click.secho("cloning of "+clone['name']+' completed',fg='green')
 
 @cli.command('add_remote',short_help='upload any existing file to drive')
 @click.option('--file',help='specify the partcular file to uploaded else entire directory is uploaded')
