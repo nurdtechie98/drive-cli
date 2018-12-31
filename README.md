@@ -88,7 +88,7 @@ Commands:
   pull        get latest updates from online drive of the file
   push        push modification from local files to the drive
   rm          delete a particular file in drive
-  status      list changes commited since last sync
+  status      list changes committed since last sync
   view-files  filter search files and file ID for files user has access to
 
 ```
