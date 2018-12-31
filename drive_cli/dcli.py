@@ -658,7 +658,7 @@ def list_out():
             break
     print(t)
 
-@cli.command('status',short_help='list changes commited since last sync')
+@cli.command('status',short_help='list changes committed since last sync')
 def status():
     '''
     status: get a change log of files changed since you had the last sync(push/pull/clone)
