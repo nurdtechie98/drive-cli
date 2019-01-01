@@ -30,6 +30,7 @@
 - `view-file` :list your files, filter them by name,type.
 - `clone` :download file/folder from drive using sharing link or file ID and get it linked 
 - `add_remote` :upload existing local file to drive and get it linked
+- `cat` :view files contents of text format without actually downloading them
 - `rm` :remove particular file or folder
 - `ls` :list put all the files present in the drive of equivalent current directory
 - `status` :list changes made to local files since last pull or pull
@@ -123,7 +124,7 @@ Download a file or folder present in drive using its file id or its sharing link
 
 ```sh
 # using file id note: since it is google doc it will be asked for a choice to select from
-$ drive clone --id 1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
+$ drive clone 1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
 Choose type to export to
  (ENTER to select, s to stop):
 
@@ -139,7 +140,7 @@ downloading file  [####################################]  100%
 completed download of watson script
 
 # using file sharing link
-$ drive clone --link https://docs.google.com/document/d/1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
+$ drive clone https://docs.google.com/document/d/1syTNkfXoc3pzpJSL0Z5LDioTFc46_LjzHjDDUvk90ks
 Choose type to export to
  (ENTER to select, s to stop):
 

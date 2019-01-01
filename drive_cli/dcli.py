@@ -207,7 +207,6 @@ def delete_file(fid):
         click.secho("Error Ocurred:\n make sure that you have appropriate access",fg='red')
 
 def get_file(fid):
-    data=drive_data()
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
     creds = store.get()
@@ -274,7 +273,7 @@ def create_dir(cwd,pid,name):
     click.secho("Created a tracked directory",fg='magenta')
     return full_path,fid['id']
 
-def file_download(item,cwd,sync_time=time.time()):
+def file_download(item,cwd,clone=False):
     token = os.path.join(dirpath,'token.json')
     store = file.Storage(token)
     creds = store.get()
@@ -282,11 +281,10 @@ def file_download(item,cwd,sync_time=time.time()):
     fid = item['id']
     fname = item['name']
     fh = io.BytesIO()
-    files = service.files().get(fileId=fid).execute()
     click.echo("Preparing: "+click.style(fname,fg='red')+" for download")
     request,ext= get_request(service,fid,item['mimeType'])
     file_path=(os.path.join(cwd,fname)+ext)
-    if((os.path.exists(file_path)) and (not write_needed(file_path,item))):
+    if( not clone and (os.path.exists(file_path)) and (not write_needed(file_path,item))):
         return
     downloader = MediaIoBaseDownload(fh, request)
     done = False
@@ -303,6 +301,20 @@ def file_download(item,cwd,sync_time=time.time()):
     data[file_path] = {'id':item['id'],'time':time.time()}
     drive_data(data)
     click.secho("completed download of "+fname,fg='yellow')
+
+def concat(fid):
+    token = os.path.join(dirpath,'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    fh = io.BytesIO()
+    item = get_file(fid)
+    request,ext= get_request(service,fid,item['mimeType'])
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+            status, done = downloader.next_chunk()
+    print(fh.getvalue().decode('utf-8'))
 
 def identify_mimetype(name):
     extension = "."+str(name.split('.')[-1])
@@ -529,6 +541,12 @@ def viewFile(name,types,pid):
              query+=" and "
          query+="'"+fid+"' in parents"
     i = 1
+    if pid:
+        parent=click.prompt('enter the fid of parent or  sharing link')
+        fid = get_fid(parent)
+        if (name != False) or (types != False) :
+            query+=" and "
+        query+="'"+fid+"' in parents"
     while True:
         response = service.files().list(q=query,
                                             spaces='drive',
@@ -549,19 +567,13 @@ def viewFile(name,types,pid):
             break
 
 @cli.command('clone',short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
-@click.option('--link',help='give sharing link of the file')
-@click.option('--id',help='give file id of the file')
-def download(link,id):
+@click.argument('payload')
+def download(payload):
     '''
     clone: download a file/folder  using either the sharing link or using the file ID  for the file
     '''
-    if id != None :
-        fid = id
-    elif link != None :
-        if 'open' in link:
-            fid = link.split('=')[-1]
-        else:
-            fid = link.split('/')[-1].split('?')[0]
+    if payload != None :
+        fid = get_fid(payload)
     else:
         click.secho("argument error",fg='red')
         with click.Context(download) as ctx:
@@ -667,6 +679,12 @@ def list_out():
         if page_token is None:
             break
     print(t)
+
+@cli.command('cat',short_help='view contents of the file using its file id or sharing link')
+@click.argument('link')
+def view(link):
+    fid = get_fid(link)
+    concat(fid)
 
 @cli.command('status',short_help='list changes committed since last sync')
 def status():
