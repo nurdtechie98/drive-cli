@@ -534,6 +534,12 @@ def viewFile(name,types,pid):
             query+=")"
         if (not name) and types:
             query=query[4:]
+    if pid:
+         parent=click.prompt('enter the fid of parent or  sharing link')
+         fid = get_fid(parent)
+         if (name != False) or (types != False) :
+             query+=" and "
+         query+="'"+fid+"' in parents"
     i = 1
     if pid:
         parent=click.prompt('enter the fid of parent or  sharing link')
