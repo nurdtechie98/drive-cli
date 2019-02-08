@@ -166,7 +166,7 @@ completed download of watson script
 ------------------------------------------
 ### Contributing
 
- * We're are open to `enhancements` & `bug-fixes` :smile:.
+ * We're are open to `enhancements` & `bug-fixes` :smile:. Take a look [here](./Contributing.md) to get started
  * Feel free to add issues and submit patches
 
 ------------------------------------------
