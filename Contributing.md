@@ -43,5 +43,3 @@ If the code is mergeable (you get a message saying “Able to merge”), go ahea
     - If your checks have passed, your PR will be assigned a reviewer who will review your code and provide comments. Please address each review comment by pushing new commits to the same branch (the PR will automatically update, so you don’t need to submit a new one). Once you are done, comment below each review comment marking it as “Done”. Feel free to use the thread to have a discussion about comments that you don’t understand completely or don’t agree with.
 
     - Once all comments are addressed, the reviewer will give an LGTM (‘looks good to me’) and merge the PR.
-
-Congratulations, you have successfully contributed to Project Drive-CLI!
