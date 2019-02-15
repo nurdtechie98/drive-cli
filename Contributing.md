@@ -8,7 +8,7 @@ To set up the development environment, follow the instructions in README.
 
 ### Finding something to work on
 
-The issue tracker of Drive-CLI a good place to start. If you find something that interests you, comment on the thread and we’ll help get you started.
+The issue tracker of Drive-CLI a good place to start. If you find something that interests you, comment on the thread and we’ll help get you started. Do make sure to get an issue assigned to you before you start working on it.
 
 Alternatively, if you come across a new bug on the site, please file a new issue and comment if you would like to be assigned. The existing issues are tagged with one or more labels, its importance etc., that can help you in selecting one.
 
