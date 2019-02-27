@@ -29,7 +29,7 @@
 
 - `view-files`: list your files; filter them by name, type.
 - `clone`: download file/folder from drive using sharing link or file ID and get it linked.
-- `add_remote`: upload existing local file to drive and get it linked.
+- `add-remote`: upload existing local file to drive and get it linked.
 - `cat`: view files contents of text format without actually downloading them.
 - `rm`: remove particular file or folder.
 - `ls`: list all the files present in the drive of equivalent current directory.
