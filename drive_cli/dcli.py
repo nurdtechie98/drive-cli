@@ -631,12 +631,12 @@ def download(payload):
     click.secho("cloning of " + clone['name'] + ' completed', fg='green')
 
 
-@cli.command('add_remote', short_help='upload any existing file to drive')
+@cli.command('add-remote', short_help='upload any existing file to drive')
 @click.option('--file', help='specify the partcular file to uploaded else entire directory is uploaded')
 @click.option('--pid', help='specify particular folder id/sharing_link of the folder under which remote must must be added')
 def create_remote(file, pid):
     """
-    add_remote: create remote equivalent for existing file/folder in local device
+    add-remote: create remote equivalent for existing file/folder in local device
     """
     cwd = os.getcwd()
     if pid == None:
@@ -706,7 +706,7 @@ def list_out():
     cwd = os.getcwd()
     if cwd not in data.keys():
         click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone", fg='red')
+            "following directory has not been tracked: \nuse drive add-remote or drive clone", fg='red')
         sys.exit(0)
     query = "'" + data[cwd]['id'] + "' in parents"
     # print(query)
@@ -743,7 +743,7 @@ def status():
     data = drive_data()
     if cwd not in data.keys():
         click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+            "following directory has not been tracked: \nuse drive add-remote or drive clone ", fg='red')
         sys.exit(0)
     sync_time = data[cwd]['time']
     list_status(cwd, sync_time)
@@ -755,7 +755,7 @@ def pull():
     cwd = os.getcwd()
     if cwd not in data.keys():
         click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+            "following directory has not been tracked: \nuse drive add-remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
     syn_time = data[cwd]['time']
@@ -776,7 +776,7 @@ def push():
     cwd = os.getcwd()
     if cwd not in data.keys():
         click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+            "following directory has not been tracked: \nuse drive add-remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
     syn_time = data[cwd]['time']
