@@ -3,14 +3,10 @@ import os
 import sys
 import io
 import re
-import getpass
-import subprocess
 import requests
 import click
 import json
 import time
-import colorama
-from pick import pick
 from pick import Picker
 from prettytable import PrettyTable
 from googleapiclient.discovery import build
@@ -20,8 +16,31 @@ from oauth2client import file, client, tools
 from .utils import MIMETYPES
 import pyfiglet
 
-dirpath = os.path.dirname(os.path.realpath(__file__))
+dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
 SCOPES = 'https://www.googleapis.com/auth/drive'
+
+
+def refresh():
+    print(os.listdir(dirpath))
+    token_json_file = open(os.path.join(dirpath, "token.json"), "r")
+    token_json = json.load(token_json_file)
+    token_json_file.close()
+    credentials = client.GoogleCredentials(None,
+                                           token_json["client_id"],
+                                           token_json["client_secret"],
+                                           token_json["refresh_token"],
+                                           None,
+                                           "https://accounts.google.com/o/oauth2/token",
+                                           "sms-proxy")
+
+    http = credentials.authorize(Http())
+    credentials.refresh(http)
+    credentials = credentials._to_json([])
+
+    # write valid token for test run
+    token_json_file = open(os.path.join(dirpath, "token.json"), "w")
+    token_json_file.write(credentials)
+    token_json_file.close()
 
 
 def login(remote):
@@ -41,6 +60,7 @@ def login(remote):
         click.secho(result, fg='yellow')
         click.secho(
             "********************************************************", bold=True, fg='red')
+    return True
 
 
 def go_back(picker):
@@ -125,7 +145,7 @@ def get_request(service, fid, mimeType):
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
         picker = Picker(options, title, indicator='=>', default_index=0)
-        picker.register_custom_handler(ord('s'),  go_back)
+        picker.register_custom_handler(ord('s'), go_back)
         chosen, index = picker.start()
         if index != -1:
             request = service.files().export_media(
@@ -169,8 +189,7 @@ def push_needed(drive, item_path):
         if sync_time < drive_time:
             input = ''
             while(input != 's' and input != 'o'):
-                input = click.prompt("Conflict: both local and online copy of " +
-                                     dir_name + " has been modified\npress o to OVERWRITE s to SKIP")
+                input = click.prompt("Conflict: both local and online copy of " + dir_name + " has been modified\npress o to OVERWRITE s to SKIP")
             if(input == 'o'):
                 return True
         else:
@@ -455,8 +474,6 @@ def push_content(cwd, fid):
     drive_lis = get_child(cwd)
     local_lis = os.listdir(cwd)
     data = drive_data()
-    sync_time = data[cwd]['time']
-    # print(local_lis,"\n",drive_lis.keys())
     for item in local_lis:
         item_path = os.path.join(cwd, item)
         if(os.path.isdir(item_path)):
@@ -702,7 +719,6 @@ def list_out():
     creds = store.get()
     service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
-    lis = []
     cwd = os.getcwd()
     if cwd not in data.keys():
         click.secho(
@@ -758,7 +774,6 @@ def pull():
             "following directory has not been tracked: \nuse drive add-remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
-    syn_time = data[cwd]['time']
     current_root = get_file(fid)
     click.secho("checking for changes in '" +
                 current_root['name'] + "' ....", fg='magenta')
@@ -779,7 +794,6 @@ def push():
             "following directory has not been tracked: \nuse drive add-remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
-    syn_time = data[cwd]['time']
     current_root = get_file(fid)  # can be avoided
     click.secho("checking for changes in '" +
                 current_root['name'] + "' ....", fg='magenta')
