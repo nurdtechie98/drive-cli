@@ -4,7 +4,7 @@ Options:
   --remote  remote login in case browser is on a different machine
   --help    Show this message and exit.
 Commands:
-  add_remote  upload any existing file to drive
+  add-remote  upload any existing file to drive
   cat         view contents of the file using its file id or sharing link
   clone       download any file using sharing link or file ID it will be
               automatically tracked henceforth

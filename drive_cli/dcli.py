@@ -16,7 +16,7 @@ from oauth2client import file, client, tools
 from .utils import MIMETYPES
 import pyfiglet
 
-dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
+dirpath = os.path.dirname(os.path.realpath(__file__))
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
 

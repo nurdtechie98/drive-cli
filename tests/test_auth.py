@@ -1,5 +1,5 @@
 import unittest
-from drive_cli.dcli import (login, refresh)
+from drive_cli.dcli import (login, refresh, dirpath)
 
 
 class TestAuth(unittest.TestCase):
@@ -21,4 +21,6 @@ class TestAuth(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    # Test path
+    dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
     unittest.main()
