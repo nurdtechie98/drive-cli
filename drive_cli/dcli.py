@@ -27,23 +27,24 @@ SCOPES = 'https://www.googleapis.com/auth/drive'
 def login(remote):
     try:
         token = os.path.join(dirpath, 'token.json')
-        store = file.Storage(token)
-        creds = store.get()
-        if not creds or creds.invalid:
-            client_id = os.path.join(dirpath, 'oauth.json')
-            flow = client.flow_from_clientsecrets(client_id, SCOPES)
-            flags = tools.argparser.parse_args(args=[])
-            if remote:
-                flags.noauth_local_webserver = True
-            creds = tools.run_flow(flow, store, flags)
-            click.secho(
-                "********************** welcome to **********************", bold=True, fg='red')
-            result = pyfiglet.figlet_format("Drive - CLI", font="slant")
-            click.secho(result, fg='yellow')
-            click.secho(
-                "********************************************************", bold=True, fg='red')
-    except:
-        print("Path name error")
+    except OSError as e:
+        print("Path name error", e)
+    store = file.Storage(token)
+    creds = store.get()
+    if not creds or creds.invalid:
+        client_id = os.path.join(dirpath, 'oauth.json')
+        flow = client.flow_from_clientsecrets(client_id, SCOPES)
+        flags = tools.argparser.parse_args(args=[])
+        if remote:
+            flags.noauth_local_webserver = True
+        creds = tools.run_flow(flow, store, flags)
+        click.secho(
+            "********************** welcome to **********************", bold=True, fg='red')
+        result = pyfiglet.figlet_format("Drive - CLI", font="slant")
+        click.secho(result, fg='yellow')
+        click.secho(
+            "********************************************************", bold=True, fg='red')
+
 
 
 def go_back(picker):
@@ -53,40 +54,41 @@ def go_back(picker):
 def drive_data(*argv):
     try:
         dclipath = os.path.join(dirpath, '.drivecli')
-        if not os.path.isfile(dclipath):
+    except OSError as e:
+        print("Path name error", e)
+    if not os.path.isfile(dclipath):
+        try:
+            with open(dclipath, 'w')as outfile:
+                if(not len(argv)):
+                    data = {}
+                else:
+                    data = argv[0]
+                try:        
+                    json.dump(data, outfile)
+                except TypeError as err:
+                    print("Unable to serialize the object-",err)    
+        except IOError as err:
+            print("Could not create file. Error- ",err)
+            
+    else:
+        if(not len(argv)):
             try:
-                with open(dclipath, 'w')as outfile:
-                    if(not len(argv)):
-                        data = {}
-                    else:
-                        data = argv[0]
-                    try:        
+                with open(dclipath, 'r') as infile:
+                    data = json.load(infile)
+            except IOError as err:
+                print("Could not read file. Error- ",err)
+        else:
+            try:
+                with open(dclipath, 'w') as outfile:
+                    data = argv[0]
+                    try:
                         json.dump(data, outfile)
                     except TypeError as err:
-                        print("Unable to serialize the object-",err)    
+                        print("Unable to serialize the object- ",err)
             except IOError as err:
                 print("Could not create file. Error- ",err)
-            
-        else:
-            if(not len(argv)):
-                try:
-                    with open(dclipath, 'r') as infile:
-                        data = json.load(infile)
-                except IOError as err:
-                    print("Could not read file. Error- ",err)
-            else:
-                try:
-                    with open(dclipath, 'w') as outfile:
-                        data = argv[0]
-                        try:
-                            json.dump(data, outfile)
-                        except TypeError as err:
-                            print("Unable to serialize the object- ",err)
-                except IOError as err:
-                    print("Could not create file. Error- ",err)
-        return data
-    except:
-        print("Path name error")
+    return data
+
 
 
 def get_request(service, fid, mimeType):
