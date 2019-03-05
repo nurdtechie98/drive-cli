@@ -33,7 +33,7 @@
 - `cat`: view files contents of text format without actually downloading them.
 - `rm`: remove particular file or folder.
 - `ls`: list all the files present in the drive of equivalent current directory.
-- `status`: list changes made to local files since last pull or pull.
+- `status`: list changes made to local files since last push or pull.
 - `pull`: get latest changes from drive to local files.
 - `push`: push the local changes to drive.
 
