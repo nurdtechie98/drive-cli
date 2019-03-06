@@ -765,25 +765,8 @@ def push():
     push_content(cwd, fid)
     click.secho("Working directory is clean", fg="green")
 
-
-@cli.command('logout', short_help='logout from the account logged in with')
-def destroyToken():
-    '''
-    logout: logout from the account that has been logged in
-    '''
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    if creds:
-        requests.post('https://accounts.google.com/o/oauth2/revoke',
-                      params={'token': creds.access_token},
-                      headers={'content-type': 'application/x-www-form-urlencoded'})
-
-    os.remove(token)
-    click.secho("Logged Out successfully\nUse:")
-    click.secho("drive login", bold=True, fg='green')
-    click.secho("to login again")
+cli.add_command(auth.logout)
 
 
 if __name__ == '__main__':
-    login()
+    pass
