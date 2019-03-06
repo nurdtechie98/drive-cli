@@ -24,40 +24,7 @@ cli.add_command(actions.create_remote)
 cli.add_command(actions.delete)
 
 
-@cli.command('ls', short_help='list out all the files present in this directory in the drive for tracked directories')
-def list_out():
-    """
-    ls: Print files belonging to a folder in the drive folder of the current directory
-    """
-    data = drive_data()
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
-    page_token = None
-    lis = []
-    cwd = os.getcwd()
-    if cwd not in data.keys():
-        click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone", fg='red')
-        sys.exit(0)
-    query = "'" + data[cwd]['id'] + "' in parents"
-    # print(query)
-    click.secho('listing down files in drive ....', fg='magenta')
-    t = PrettyTable(['Name', 'File ID', 'Type'])
-    while True:
-        children = service.files().list(q=query,
-                                        spaces='drive',
-                                        fields='nextPageToken, files(id,mimeType,name)',
-                                        pageToken=page_token
-                                        ).execute()
-        for child in children.get('files', []):
-            t.add_row([child.get('name')[:25], child.get(
-                'id'), child.get('mimeType')])
-        page_token = children.get('nextPageToken', None)
-        if page_token is None:
-            break
-    print(t)
+cli.add_command(actions.list_out)
 
 
 @cli.command('cat', short_help='view contents of the file using its file id or sharing link')
