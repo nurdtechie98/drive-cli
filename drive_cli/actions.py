@@ -239,3 +239,19 @@ def list_out():
 def view(link):
     fid = utils.get_fid(link)
     utils.concat(fid)
+
+
+
+@click.command('status', short_help='list changes committed since last sync')
+def status():
+    '''
+    status: get a change log of files changed since you had the last sync(push/pull/clone)
+    '''
+    cwd = os.getcwd()
+    data = utils.drive_data()
+    if cwd not in data.keys():
+        click.secho(
+            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+        sys.exit(0)
+    sync_time = data[cwd]['time']
+    utils.list_status(cwd, sync_time)
