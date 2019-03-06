@@ -21,26 +21,8 @@ from .utils import MIMETYPES
 import pyfiglet
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
-SCOPES = 'https://www.googleapis.com/auth/drive'
-
-
-def login(remote):
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    if not creds or creds.invalid:
-        client_id = os.path.join(dirpath, 'oauth.json')
-        flow = client.flow_from_clientsecrets(client_id, SCOPES)
-        flags = tools.argparser.parse_args(args=[])
-        if remote:
-            flags.noauth_local_webserver = True
-        creds = tools.run_flow(flow, store, flags)
-        click.secho(
-            "********************** welcome to **********************", bold=True, fg='red')
-        result = pyfiglet.figlet_format("Drive - CLI", font="slant")
-        click.secho(result, fg='yellow')
-        click.secho(
-            "********************************************************", bold=True, fg='red')
+sys.path.append(dirpath)
+import auth
 
 
 def go_back(picker):
@@ -489,12 +471,9 @@ def push_content(cwd, fid):
 @click.group()
 @click.option('--remote', is_flag=True, default=False, help='remote login in case browser is on a different machine')
 def cli(remote):
-    login(remote)
+    auth.LOGIN(remote)
 
-
-@cli.command('login', short_help='login to your google account and authenticate the service')
-def loggin():
-    pass
+cli.add_command(auth.Login)
 
 
 @cli.command('view-files', short_help='filter search files and file ID for files user has access to')
@@ -804,6 +783,7 @@ def destroyToken():
     click.secho("Logged Out successfully\nUse:")
     click.secho("drive login", bold=True, fg='green')
     click.secho("to login again")
+
 
 if __name__ == '__main__':
     login()
