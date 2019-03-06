@@ -31,24 +31,7 @@ cli.add_command(actions.status)
 
 cli.add_command(actions.pull)
 
-@cli.command('push', short_help='push modification from local files to the drive')
-def push():
-    '''
-    push the latest changes from your local folder that has been added/cloned to google drive.
-    '''
-    data = drive_data()
-    cwd = os.getcwd()
-    if cwd not in data.keys():
-        click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
-        sys.exit(0)
-    fid = data[cwd]['id']
-    syn_time = data[cwd]['time']
-    current_root = get_file(fid)  # can be avoided
-    click.secho("checking for changes in '" +
-                current_root['name'] + "' ....", fg='magenta')
-    push_content(cwd, fid)
-    click.secho("Working directory is clean", fg="green")
+cli.add_command(actions.push)
 
 cli.add_command(auth.logout)
 
