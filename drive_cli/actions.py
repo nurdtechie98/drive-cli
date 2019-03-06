@@ -167,3 +167,33 @@ def create_remote(file, pid):
         parent_name = parent_file['name']
         click.secho("content added under directory " +
                     parent_name, fg='magenta')
+
+
+@click.command('rm', short_help='delete a particular file in drive')
+@click.option('--file', help='specify the partcular file to deleted else entire directory is deleted')
+@click.option('--id', help='delete untracked file directly using id or sharing link, can be used even for unlinked files')
+def delete(file, id):
+    '''
+    rm: delete a particular file/folder from the directory in the remote drive
+    '''
+    cwd = os.getcwd()
+    if id == None:
+        if file != None:
+            file_path = os.path.join(cwd, file)
+            if os.path.isfile(file_path):
+                local_dir = utils.get_child(cwd)
+                fid = local_dir[file]
+            else:
+                click.secho("No such file exist: " + file_path, fg="red")
+                with click.Context(delete) as ctx:
+                    click.echo(delete.get_help(ctx))
+            cwd = file_path
+        else:
+            data = utils.drive_data()
+            fid = data[cwd]
+            data.pop(cwd, None)
+            utils.drive_data(data)
+        utils.delete_file(fid)
+    else:
+        fid = utils.get_fid(id)
+        utils.delete_file(fid)
