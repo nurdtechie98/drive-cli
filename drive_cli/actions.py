@@ -137,3 +137,33 @@ def download(payload):
     else:
         utils.file_download(clone, cwd)
     click.secho("cloning of " + clone['name'] + ' completed', fg='green')
+    
+
+@click.command('add_remote', short_help='upload any existing file to drive')
+@click.option('--file', help='specify the partcular file to uploaded else entire directory is uploaded')
+@click.option('--pid', help='specify particular folder id/sharing_link of the folder under which remote must must be added')
+def create_remote(file, pid):
+    """
+    add_remote: create remote equivalent for existing file/folder in local device
+    """
+    cwd = os.getcwd()
+    if pid == None:
+        pid = 'root'
+    if file != None:
+        file_path = os.path.join(cwd, file)
+        if os.path.isfile(file_path):
+            utils.upload_file(file, file_path, pid)
+        else:
+            click.secho("No such file exist: " + file_path, fg="red")
+            with click.Context(create_remote) as ctx:
+                click.echo(create_remote.get_help(ctx))
+    else:
+        sep = os.sep
+        dir_cd, name = sep.join(cwd.split(sep)[:-1]), cwd.split(sep)[-1]
+        child_cwd, child_id = utils.create_dir(dir_cd, pid, name)
+        utils.push_content(child_cwd, child_id)
+    if pid != None:
+        parent_file = utils.get_file(pid)
+        parent_name = parent_file['name']
+        click.secho("content added under directory " +
+                    parent_name, fg='magenta')
