@@ -231,3 +231,11 @@ def list_out():
         if page_token is None:
             break
     print(t)
+
+
+
+@click.command('cat', short_help='view contents of the file using its file id or sharing link')
+@click.argument('link')
+def view(link):
+    fid = utils.get_fid(link)
+    utils.concat(fid)
