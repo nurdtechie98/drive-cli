@@ -17,29 +17,7 @@ cli.add_command(auth.Login)
 
 cli.add_command(actions.view_file)
 
-@cli.command('clone', short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
-@click.argument('payload')
-def download(payload):
-    '''
-    clone: download a file/folder  using either the sharing link or using the file ID  for the file
-    '''
-    if payload != None:
-        fid = get_fid(payload)
-    else:
-        click.secho("argument error", fg='red')
-        with click.Context(download) as ctx:
-            click.echo(download.get_help(ctx))
-        sys.exit(0)
-    clone = get_file(fid)
-    cwd = os.getcwd()
-    click.secho("cloning into '" + clone['name'] + "' .....", fg='magenta')
-    if clone['mimeType'] == 'application/vnd.google-apps.folder':
-        new_dir = os.path.join(cwd, clone['name'])
-        create_new(new_dir, fid)
-        pull_content(new_dir, fid)
-    else:
-        file_download(clone, cwd)
-    click.secho("cloning of " + clone['name'] + ' completed', fg='green')
+cli.add_command(actions.download)
 
 
 @cli.command('add_remote', short_help='upload any existing file to drive')
