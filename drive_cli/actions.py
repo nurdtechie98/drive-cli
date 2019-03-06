@@ -255,3 +255,20 @@ def status():
         sys.exit(0)
     sync_time = data[cwd]['time']
     utils.list_status(cwd, sync_time)
+
+
+@click.command('pull', short_help='get latest updates from online drive of the file')
+def pull():
+    data = utils.drive_data()
+    cwd = os.getcwd()
+    if cwd not in data.keys():
+        click.secho(
+            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+        sys.exit(0)
+    fid = data[cwd]['id']
+    current_root = utils.get_file(fid)
+    click.secho("checking for changes in '" +
+                current_root['name'] + "' ....", fg='magenta')
+    utils.pull_content(cwd, fid)
+    click.secho(current_root['name'] +
+                " is up to date with drive", fg='yellow')
