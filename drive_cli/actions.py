@@ -112,3 +112,28 @@ def view_file(name, types, pid):
         page_token = response.get('nextPageToken', None)
         if page_token is None:
             break
+        
+
+@click.command('clone', short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
+@click.argument('payload')
+def download(payload):
+    '''
+    clone: download a file/folder  using either the sharing link or using the file ID  for the file
+    '''
+    if payload != None:
+        fid = utils.get_fid(payload)
+    else:
+        click.secho("argument error", fg='red')
+        with click.Context(download) as ctx:
+            click.echo(download.get_help(ctx))
+        sys.exit(0)
+    clone = utils.get_file(fid)
+    cwd = os.getcwd()
+    click.secho("cloning into '" + clone['name'] + "' .....", fg='magenta')
+    if clone['mimeType'] == 'application/vnd.google-apps.folder':
+        new_dir = os.path.join(cwd, clone['name'])
+        utils.create_new(new_dir, fid)
+        utils.pull_content(new_dir, fid)
+    else:
+        utils.file_download(clone, cwd)
+    click.secho("cloning of " + clone['name'] + ' completed', fg='green')
