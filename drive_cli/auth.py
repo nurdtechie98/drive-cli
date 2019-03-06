@@ -30,3 +30,22 @@ def LOGIN(remote):
 @click.command(short_help='login to your google account and authenticate the service')
 def Login():
     pass
+
+
+@click.command(short_help='logout from the account logged in with')
+def logout():
+    '''
+    logout: logout from the account that has been logged in
+    '''
+    token = os.path.join(dirpath, 'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    if creds:
+        requests.post('https://accounts.google.com/o/oauth2/revoke',
+                      params={'token': creds.access_token},
+                      headers={'content-type': 'application/x-www-form-urlencoded'})
+
+    os.remove(token)
+    click.secho("Logged Out successfully\nUse:")
+    click.secho("drive login", bold=True, fg='green')
+    click.secho("to login again")
