@@ -29,23 +29,7 @@ cli.add_command(actions.view)
 
 cli.add_command(actions.status)
 
-@cli.command('pull', short_help='get latest updates from online drive of the file')
-def pull():
-    data = drive_data()
-    cwd = os.getcwd()
-    if cwd not in data.keys():
-        click.secho(
-            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
-        sys.exit(0)
-    fid = data[cwd]['id']
-    syn_time = data[cwd]['time']
-    current_root = get_file(fid)
-    click.secho("checking for changes in '" +
-                current_root['name'] + "' ....", fg='magenta')
-    pull_content(cwd, fid)
-    click.secho(current_root['name'] +
-                " is up to date with drive", fg='yellow')
-
+cli.add_command(actions.pull)
 
 @cli.command('push', short_help='push modification from local files to the drive')
 def push():
