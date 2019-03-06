@@ -272,3 +272,22 @@ def pull():
     utils.pull_content(cwd, fid)
     click.secho(current_root['name'] +
                 " is up to date with drive", fg='yellow')
+
+
+@click.command('push', short_help='push modification from local files to the drive')
+def push():
+    '''
+    push the latest changes from your local folder that has been added/cloned to google drive.
+    '''
+    data = utils.drive_data()
+    cwd = os.getcwd()
+    if cwd not in data.keys():
+        click.secho(
+            "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
+        sys.exit(0)
+    fid = data[cwd]['id']
+    current_root = utils.get_file(fid)
+    click.secho("checking for changes in '" +
+                current_root['name'] + "' ....", fg='magenta')
+    utils.push_content(cwd, fid)
+    click.secho("Working directory is clean", fg="green")
