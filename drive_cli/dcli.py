@@ -23,15 +23,9 @@ cli.add_command(actions.create_remote)
 
 cli.add_command(actions.delete)
 
-
 cli.add_command(actions.list_out)
 
-
-@cli.command('cat', short_help='view contents of the file using its file id or sharing link')
-@click.argument('link')
-def view(link):
-    fid = get_fid(link)
-    concat(fid)
+cli.add_command(actions.view)
 
 
 @cli.command('status', short_help='list changes committed since last sync')
