@@ -92,12 +92,6 @@ def view_file(name, types, pid):
             query += " and "
         query += "'" + fid + "' in parents"
     i = 1
-    if pid:
-        parent = click.prompt('enter the fid of parent or  sharing link')
-        fid = utils.get_fid(parent)
-        if (name != False) or (types != False):
-            query += " and "
-        query += "'" + fid + "' in parents"
     while True:
         response = service.files().list(q=query,
                                         spaces='drive',
