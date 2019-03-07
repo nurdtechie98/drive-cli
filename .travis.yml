@@ -8,8 +8,8 @@ sudo: false
 
 before_install:
   - cd drive_cli
-  - openssl aes-256-cbc -K $Secret_Key -iv $Secret_IV
-    -in token.json.enc -out token.json -d
+  - openssl aes-256-cbc -K $Secret_Key -iv $Secret_IV -in token.json.enc -out token.json -d
+  - cd ..
   - pip install flake8
 
 install:
