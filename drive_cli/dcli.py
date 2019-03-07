@@ -10,9 +10,9 @@ import actions
 @click.group()
 @click.option('--remote', is_flag=True, default=False, help='remote login in case browser is on a different machine')
 def cli(remote):
-    auth.LOGIN(remote)
+    auth.login(remote)
 
-cli.add_command(auth.Login)
+cli.add_command(auth.loggin)
 
 cli.add_command(actions.view_file)
 

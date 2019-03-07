@@ -8,7 +8,7 @@ SCOPES = 'https://www.googleapis.com/auth/drive'
 dirpath = os.path.dirname(os.path.realpath(__file__))
 
 
-def LOGIN(remote):
+def login(remote):
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
     creds = store.get()
@@ -27,12 +27,12 @@ def LOGIN(remote):
             "********************************************************", bold=True, fg='red')
          
         
-@click.command(short_help='login to your google account and authenticate the service')
-def Login():
+@click.command('login', short_help='login to your google account and authenticate the service')
+def loggin():
     pass
 
 
-@click.command(short_help='logout from the account logged in with')
+@click.command('logout', short_help='logout from the account logged in with')
 def logout():
     '''
     logout: logout from the account that has been logged in
