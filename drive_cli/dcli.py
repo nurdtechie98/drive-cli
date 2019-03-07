@@ -1,11 +1,12 @@
+import auth
+import actions
 import os
 import sys
 import click
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dirpath)
-import auth
-import actions
+
 
 @click.group()
 @click.option('--remote', is_flag=True, default=False, help='remote login in case browser is on a different machine')

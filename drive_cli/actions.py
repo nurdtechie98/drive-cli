@@ -1,3 +1,4 @@
+import utils
 import os
 import sys
 import click
@@ -9,7 +10,7 @@ from googleapiclient.discovery import build
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dirpath)
-import utils
+
 
 @click.command('view-files', short_help='filter search files and file ID for files user has access to')
 @click.option('--name', is_flag=bool, help='provide username in whose repos are to be listed.')
