@@ -1,0 +1,26 @@
+language: python
+
+python:
+  - "3.5"
+  - "3.6"
+
+sudo: false
+
+before_install:
+  - cd drive_cli
+  - openssl aes-256-cbc -K $encrypted_3a44c46ef3b1_key -iv $encrypted_3a44c46ef3b1_iv
+    -in token.json.enc -out token.json -d
+  - pip install flake8
+
+install:
+  - python3 setup.py install
+
+script:
+  - flake8 .
+  - cd tests
+  - python3 base.py
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always

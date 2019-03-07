@@ -7,7 +7,6 @@ sys.path.append(dirpath)
 import auth
 import actions
 
-
 @click.group()
 @click.option('--remote', is_flag=True, default=False, help='remote login in case browser is on a different machine')
 def cli(remote):
@@ -37,3 +36,4 @@ cli.add_command(auth.logout)
 
 if __name__ == '__main__':
     pass
+
