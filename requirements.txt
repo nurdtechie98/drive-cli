@@ -1,9 +1,0 @@
-requests
-click
-colorama
-pick
-google-api-python-client
-oauth2client
-prettytable
-httplib2
-pyfiglet

@@ -10,8 +10,6 @@ before_install:
   - cd drive_cli
   - openssl aes-256-cbc -K $encrypted_3a44c46ef3b1_key -iv $encrypted_3a44c46ef3b1_iv
     -in token.json.enc -out token.json -d
-  - cd ..
-  - pip install -r "requirements.txt"
   - pip install flake8
 
 install:
