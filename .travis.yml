@@ -13,7 +13,7 @@ before_install:
   - pip install flake8
 
 install:
-  - python3 setup.py install
+  - pip install -e .
 
 script:
   - flake8 .
@@ -21,6 +21,6 @@ script:
   - python3 base.py
 
 notifications:
-  email:
+  email
     on_success: change
     on_failure: always
