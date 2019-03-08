@@ -21,6 +21,6 @@ script:
   - python3 base.py
 
 notifications:
-  email
+  email:
     on_success: change
     on_failure: always
