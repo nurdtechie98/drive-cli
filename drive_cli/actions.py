@@ -78,7 +78,7 @@ def view_file(name, types, pid):
                         min_selection_count=1)
         picker.register_custom_handler(ord('s'), go_back)
         selected = picker.start()
-        if type(selected) == list:
+        if isinstance(selected, list):
             query += "and ("
             for types in selected:
                 query += "mimeType='" + mimeTypes[types[0]] + "' or "
@@ -99,7 +99,7 @@ def view_file(name, types, pid):
                                         fields='nextPageToken, files(id, name,mimeType,modifiedTime)',
                                         pageToken=page_token).execute()
 
-        templist = [response.get('files', [])[i:i + 25] for i in range(0, len(
+        templist = [response.get('files', [])[j:j + 25] for j in range(0, len(
             response.get('files', [])), 25)]
         for item in templist:
             t = PrettyTable(['Sr.', 'Name', 'ID', 'Type', 'Modified Time'])
@@ -113,7 +113,7 @@ def view_file(name, types, pid):
         page_token = response.get('nextPageToken', None)
         if page_token is None:
             break
-        
+
 
 @click.command('clone', short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
 @click.argument('payload')
@@ -138,7 +138,7 @@ def download(payload):
     else:
         utils.file_download(clone, cwd)
     click.secho("cloning of " + clone['name'] + ' completed', fg='green')
-    
+
 
 @click.command('add_remote', short_help='upload any existing file to drive')
 @click.option('--file', help='specify the partcular file to uploaded else entire directory is uploaded')
@@ -198,7 +198,7 @@ def delete(file, id):
     else:
         fid = utils.get_fid(id)
         utils.delete_file(fid)
-        
+
 
 @click.command('ls', short_help='list out all the files present in this directory in the drive for tracked directories')
 def list_out():
@@ -234,13 +234,11 @@ def list_out():
     print(t)
 
 
-
 @click.command('cat', short_help='view contents of the file using its file id or sharing link')
 @click.argument('link')
 def view(link):
     fid = utils.get_fid(link)
     utils.concat(fid)
-
 
 
 @click.command('status', short_help='list changes committed since last sync')

@@ -37,4 +37,3 @@ cli.add_command(auth.logout)
 
 if __name__ == '__main__':
     pass
-

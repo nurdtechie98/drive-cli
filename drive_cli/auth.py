@@ -25,8 +25,8 @@ def login(remote):
         click.secho(result, fg='yellow')
         click.secho(
             "********************************************************", bold=True, fg='red')
-         
-        
+
+
 @click.command('login', short_help='login to your google account and authenticate the service')
 def loggin():
     pass

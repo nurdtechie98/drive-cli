@@ -577,6 +577,7 @@ MIMETYPES = {
             ".zip": "application/x-zip-compressed"
 }
 
+
 def go_back(picker):
     return None, -1
 
@@ -659,7 +660,7 @@ def get_request(service, fid, mimeType):
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
         picker = Picker(options, title, indicator='=>', default_index=0)
-        picker.register_custom_handler(ord('s'),  go_back)
+        picker.register_custom_handler(ord('s'), go_back)
         chosen, index = picker.start()
         if index != -1:
             request = service.files().export_media(
@@ -1011,4 +1012,3 @@ def push_content(cwd, fid):
     data = drive_data()
     data[cwd]['time'] = time.time()
     drive_data(data)
-
