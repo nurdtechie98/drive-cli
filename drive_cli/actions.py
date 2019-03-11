@@ -290,3 +290,91 @@ def push():
                 current_root['name'] + "' ....", fg='magenta')
     utils.push_content(cwd, fid)
     click.secho("Working directory is clean", fg="green")
+
+
+role_help = """provide role to grant permission accordingly, following roles are currently allowed :
+                * owner
+                * writer
+                * reader
+                [Default]:reader
+"""
+type_help = """type of grantee, following are currently available :
+                * user
+                * group
+                * anyone
+                [Default]:user
+"""
+message_help = """provide a short message you want to send
+                [Default]:'shared via drive-cli'
+"""
+
+
+@click.command('share', short_help="share file using file id or link")
+@click.argument('fid')
+@click.option('--role', default="reader", help=role_help)
+@click.option('--type', default="user", help=type_help)
+@click.option('--message', default="shared via drive-cli", help=message_help)
+def share(fid, role, type, message):
+    '''
+    share file/folder using using either the sharing link or using the file ID
+    '''
+    click.secho("updating share setting.....", fg='magenta')
+    file_id = utils.get_fid(fid)
+    token = os.path.join(dirpath, 'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    if(type == "anyone"):
+        if(role == "owner"):
+            transfer_ownership = True
+        else:
+            transfer_ownership = False
+        request = {
+            "role": role,
+            "type": type,
+            "allowFileDiscovery": True
+        }
+        try:
+            response = service.permissions().create(body=request,
+                                                    fileId=file_id,
+                                                    transferOwnership=transfer_ownership,
+                                                    fields='id').execute()
+            if(list(response.keys())[0] == "error"):
+                click.secho(response["error"]["message"], fg='red')
+            else:
+                share_link = "https://drive.google.com/open?id=" + file_id
+                click.secho("share link : " + share_link)
+        except:
+            error_message = str(sys.exc_info()[1])
+            error_message = error_message.split('\"')[1]
+            click.secho(error_message, fg='red')
+
+    else:
+        if(type == "user"):
+            email_id = click.prompt("Enetr email address of user ")
+        else:
+            email_id = click.prompt("Enetr email address of a google group ")
+        if(role == "owner"):
+            transfer_ownership = True
+        else:
+            transfer_ownership = False
+        request = {
+            "role": role,
+            "type": type,
+            "emailAddress": email_id
+        }
+        try:
+            response = service.permissions().create(body=request,
+                                                    fileId=file_id,
+                                                    emailMessage=message,
+                                                    sendNotificationEmail=True,
+                                                    transferOwnership=transfer_ownership,
+                                                    fields='id').execute()
+            if(list(response.keys())[0] == "error"):
+                click.secho(response["error"]["message"], fg='red')
+            else:
+                click.secho("successfully share", fg='green')
+        except:
+            error_message = str(sys.exc_info()[1])
+            error_message = error_message.split('\"')[1]
+            click.secho(error_message, fg='red')
