@@ -295,17 +295,17 @@ def push():
 role_help = """provide role to grant permission accordingly, following roles are currently allowed :
                 * owner
                 * writer
-                * reader 
-                [Default] : reader                
+                * reader
+                [Default]:reader
 """
 type_help = """type of grantee, following are currently available :
                 * user
                 * group
                 * anyone
-                [Default] : user               
+                [Default]:user
 """
 message_help = """provide a short message you want to send
-                   [Default]: 'shared via drive-cli'                   
+                [Default]:'shared via drive-cli'
 """
 
 
@@ -316,7 +316,7 @@ message_help = """provide a short message you want to send
 @click.option('--message', default="shared via drive-cli", help=message_help)
 def share(fid, role, type, message):
     '''
-    share file/folder using using either the sharing link or using the file ID 
+    share file/folder using using either the sharing link or using the file ID
     '''
     click.secho("updating share setting.....", fg='magenta')
     file_id = utils.get_fid(fid)
