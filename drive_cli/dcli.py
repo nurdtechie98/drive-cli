@@ -33,6 +33,8 @@ cli.add_command(actions.pull)
 
 cli.add_command(actions.push)
 
+cli.add_command(actions.share)
+
 cli.add_command(auth.logout)
 
 if __name__ == '__main__':
