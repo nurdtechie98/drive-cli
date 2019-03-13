@@ -68,6 +68,7 @@
 
 ------------------------------------------
 ### Usage
+
 #### Help 
 The help for any command in particular, or for the entire list of commands, can be displayed using the **help** command.
 ```sh
@@ -119,6 +120,7 @@ content added under directory test
 
 ```
 
+
 #### Clone
 Download a file or folder present in drive using its file id or its sharing link. In case it is a folder it gets tracked.
 
@@ -156,6 +158,11 @@ downloading file  [####################################]  100%
 completed download of watson script
 
 ```
+
+
+=======
+for further in depth documetation checkout our [wiki](https://github.com/nurdtechie98/drive-cli/wiki/How-to-use-%3F).
+
 
 ------------------------------------------
 ### Uninstalling

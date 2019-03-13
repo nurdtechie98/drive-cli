@@ -38,7 +38,10 @@ Our central development branch is development. Coding is done on feature branche
 
 3. Once the code is pushed, create a pull request:
 
+
     - On your Github fork, select your branch and click “New pull request”. Select “master” as the base branch and your branch in the “compare” dropdown.
+    - On your Github fork, select your branch and click “New pull request”. Select “dev” as the base branch and your branch in the “compare” dropdown.
+
 If the code is mergeable (you get a message saying “Able to merge”), go ahead and create the pull request.
     - If your checks have passed, your PR will be assigned a reviewer who will review your code and provide comments. Please address each review comment by pushing new commits to the same branch (the PR will automatically update, so you don’t need to submit a new one). Once you are done, comment below each review comment marking it as “Done”. Feel free to use the thread to have a discussion about comments that you don’t understand completely or don’t agree with.
 
