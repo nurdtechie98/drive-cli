@@ -20,6 +20,8 @@ def view_file(name, types, pid):
     """
     view-files: Filter based list of the names and ids of the first 10 files the user has access to
     """
+    cwd = os.getcwd()
+    flags = {"--name": [None], "--types": [None], "--pid": [None]}
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
     creds = store.get()
@@ -28,6 +30,7 @@ def view_file(name, types, pid):
     query = ""
     if name:
         q_name = click.prompt('enter the search value')
+        flags["--name"] = [q_name]
         query = "name contains '" + q_name + "' "
     if types:
         mimeTypes = {
@@ -76,18 +79,22 @@ def view_file(name, types, pid):
         options = [x for x in mimeTypes.keys()]
         picker = Picker(options, title, multi_select=True,
                         min_selection_count=1)
-        picker.register_custom_handler(ord('s'), go_back)
+        picker.register_custom_handler(ord('s'), utils.go_back)
         selected = picker.start()
+        option = []
         if isinstance(selected, list):
             query += "and ("
             for types in selected:
                 query += "mimeType='" + mimeTypes[types[0]] + "' or "
+                option.append(types[0])
             query = query[:-3]
             query += ")"
+            flags["--types"] = option
         if (not name) and types:
             query = query[4:]
     if pid:
         parent = click.prompt('enter the fid of parent or  sharing link')
+        flags["--pid"] = [parent]
         fid = utils.get_fid(parent)
         if (name != False) or (types != False):
             query += " and "
@@ -113,6 +120,7 @@ def view_file(name, types, pid):
         page_token = response.get('nextPageToken', None)
         if page_token is None:
             break
+    utils.save_history([flags, "", cwd])
 
 
 @click.command('clone', short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
@@ -121,6 +129,8 @@ def download(payload):
     '''
     clone: download a file/folder  using either the sharing link or using the file ID  for the file
     '''
+    cwd = os.getcwd()
+    utils.save_history([{}, payload, cwd])
     if payload != None:
         fid = utils.get_fid(payload)
     else:
@@ -129,7 +139,6 @@ def download(payload):
             click.echo(download.get_help(ctx))
         sys.exit(0)
     clone = utils.get_file(fid)
-    cwd = os.getcwd()
     click.secho("cloning into '" + clone['name'] + "' .....", fg='magenta')
     if clone['mimeType'] == 'application/vnd.google-apps.folder':
         new_dir = os.path.join(cwd, clone['name'])
@@ -148,6 +157,7 @@ def create_remote(file, pid):
     add_remote: create remote equivalent for existing file/folder in local device
     """
     cwd = os.getcwd()
+    utils.save_history([{"--file": [file], "--pid":[pid]}, "", cwd])
     if pid == None:
         pid = 'root'
     if file != None:
@@ -178,6 +188,7 @@ def delete(file, id):
     rm: delete a particular file/folder from the directory in the remote drive
     '''
     cwd = os.getcwd()
+    utils.save_history([{"--file": [file], "--id":[id]}, "", cwd])
     if id == None:
         if file != None:
             file_path = os.path.join(cwd, file)
@@ -205,13 +216,14 @@ def list_out():
     """
     ls: Print files belonging to a folder in the drive folder of the current directory
     """
+    cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
     data = utils.drive_data()
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
     creds = store.get()
     service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
-    cwd = os.getcwd()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone", fg='red')
@@ -237,6 +249,8 @@ def list_out():
 @click.command('cat', short_help='view contents of the file using its file id or sharing link')
 @click.argument('link')
 def view(link):
+    cwd = os.getcwd()
+    utils.save_history([{}, link, cwd])
     fid = utils.get_fid(link)
     utils.concat(fid)
 
@@ -247,6 +261,7 @@ def status():
     status: get a change log of files changed since you had the last sync(push/pull/clone)
     '''
     cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
     data = utils.drive_data()
     if cwd not in data.keys():
         click.secho(
@@ -258,8 +273,9 @@ def status():
 
 @click.command('pull', short_help='get latest updates from online drive of the file')
 def pull():
-    data = utils.drive_data()
     cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
+    data = utils.drive_data()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
@@ -278,8 +294,9 @@ def push():
     '''
     push the latest changes from your local folder that has been added/cloned to google drive.
     '''
-    data = utils.drive_data()
     cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
+    data = utils.drive_data()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
@@ -318,6 +335,8 @@ def share(fid, role, type, message):
     '''
     share file/folder using using either the sharing link or using the file ID
     '''
+    cwd = os.getcwd()
+    flags = {"--role": [role], "--type": [type], "--message": [message]}
     click.secho("updating share setting.....", fg='magenta')
     file_id = utils.get_fid(fid)
     token = os.path.join(dirpath, 'token.json')
@@ -354,6 +373,7 @@ def share(fid, role, type, message):
             email_id = click.prompt("Enetr email address of user ")
         else:
             email_id = click.prompt("Enetr email address of a google group ")
+        flags["Email ID"] = email_id
         if(role == "owner"):
             transfer_ownership = True
         else:
@@ -378,3 +398,63 @@ def share(fid, role, type, message):
             error_message = str(sys.exc_info()[1])
             error_message = error_message.split('\"')[1]
             click.secho(error_message, fg='red')
+    utils.save_history([flags, fid, cwd])
+
+
+@click.command('history', short_help="view history")
+@click.option('--date', help="specify the date to filter out your history")
+@click.option('--clear', is_flag=bool, help="clear entire histroy")
+def history(date, clear):
+    if clear:
+        click.confirm('Do you want to continue?', abort=True)
+        click.clear()
+        utils.clear_history()
+        cwd = os.getcwd()
+        utils.save_history([{"--date": [date], "--clear":["True"]}, "", cwd])
+    else:
+        cwd = os.getcwd()
+        utils.save_history([{"--date": [date], "--clear":[None]}, "", cwd])
+        History = utils.get_history()
+        if date != None:
+            if date in History:
+                history = History[date]
+                for i in history:
+                    click.secho(date + "  " + i, fg='yellow', bold=True)
+                    click.secho("working directory : " + history[i]["cwd"], bold=True)
+                    click.secho("command : " + history[i]["command"])
+                    if(history[i]["arg"] != ""):
+                        click.secho("argument : " + history[i]["arg"])
+                    if(len(history[i]["flags"]) != 0):
+                        flag_val = ""
+                        for j in history[i]["flags"]:
+                            if(history[i]["flags"][j][0] != None):
+                                val = ", ".join(history[i]["flags"][j])
+                                flag_val = flag_val + "\t" + j + " : " + val + "\n"
+                        if(flag_val != ""):
+                            click.secho("flags : ", bold=True)
+                            click.secho(flag_val)
+                    click.secho("\n")
+            else:
+                click.secho("No histrory found!!!", fg='red')
+        else:
+            if len(History) == 0:
+                click.secho("No histrory found!!!", fg='red')
+            else:
+                for date in History:
+                    history = History[date]
+                    for i in history:
+                        click.secho(date + "  " + i, fg='yellow', bold=True)
+                        click.secho("working directory : " + history[i]["cwd"], bold=True)
+                        click.secho("command : " + history[i]["command"])
+                        if(history[i]["arg"] != ""):
+                            click.secho("argument : " + history[i]["arg"])
+                        if(len(history[i]["flags"]) != 0):
+                            flag_val = ""
+                            for j in history[i]["flags"]:
+                                if(history[i]["flags"][j][0] != None):
+                                    val = ", ".join(history[i]["flags"][j])
+                                    flag_val = flag_val + "\t" + j + " : " + val + "\n"
+                            if(flag_val != ""):
+                                click.secho("flags : ", bold=True)
+                                click.secho(flag_val)
+                        click.secho("\n")
