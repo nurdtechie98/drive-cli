@@ -407,8 +407,9 @@ def share(fid, role, type, message):
 def history(date, clear):
     if clear:
         click.confirm('Do you want to continue?', abort=True)
-        click.clear()
+        click.secho("deleting.....", fg='magenta')
         utils.clear_history()
+        click.secho("successfully deleted", fg='green')
         cwd = os.getcwd()
         utils.save_history([{"--date": [date], "--clear":["True"]}, "", cwd])
     else:
