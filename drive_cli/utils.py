@@ -158,11 +158,15 @@ def modified_or_created(sync_time, item_path):
 
 
 def get_fid(inp):
-    if 'drive' in inp:
+    if 'google' in inp:
         if 'open' in inp:
             fid = inp.split('=')[-1]
+        elif 'folders' in inp:
+            fid = inp.split('/')[-1]
+            if '?' in fid:
+                fid = fid.split('?')[-2]
         else:
-            fid = inp.split('/')[-1].split('?')[0]
+            fid = inp.split('/')[-2]
     else:
         fid = inp
     return fid
