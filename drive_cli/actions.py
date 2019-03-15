@@ -459,19 +459,136 @@ def history(date, clear):
                                 click.secho("flags : ", bold=True)
                                 click.secho(flag_val)
                         click.secho("\n")
+                        
 
-@click.command('log')
+@click.command('log', short_help="It allows users to see who made edits and to revert to earlier versions of the same file.")
 @click.argument('fid')
-def get_revision(fid):
-    file_id = utils.get_fid(fid)
+@click.option('--get', type= str, help ="provide revision id to get more info ")
+@click.option('--delete', type= str, help ="delete a particular revision")
+@click.option('--save', type=str, help ="To keep revision forever, even if it is no longer the head revision. If not set, the revision will be automatically purged 30 days after newer content is uploaded. ")
+def get_revision(fid,get,delete,save):
+    '''
+    It allows users to see who made edits and to revert to earlier versions of the same file.
+    '''
+    cwd=os.getcwd()
+    flags={"--get":[get],"--delete":[delete],"--save":[save]}
+    utils.save_history([flags, fid, cwd])
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
     creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
-    response = service.revisions().list(fileId = file_id).execute()
-    revisions = response["revisions"]
-    for r in revisions:
-        modified_time = r["modifiedTime"]
-        click.secho(modified_time, fg = 'yellow', bold = True)
+    if(get != None):
+        click.secho("fetching....", fg='magenta')
+        service = build('drive', 'v2', http=creds.authorize(Http()))
+        file_id = utils.get_fid(fid)
+        response = service.revisions().get(fileId = file_id,
+                                    revisionId = get).execute()
+        modified_time = response["modifiedDate"].split("T")
+        user = response["lastModifyingUser"]    
+        click.secho(click.style("File : ",fg ='yellow', bold = True) + response["originalFilename"] + " " + response["mimeType"])
+        click.secho(click.style("Link : ",fg ='yellow', bold = True) + response["selfLink"])
+        click.secho(click.style("Author : ",fg ='yellow', bold = True) + response["lastModifyingUserName"] + " " + user["emailAddress"])
+        click.secho(click.style("Date : ",fg ='yellow', bold = True) + modified_time[0] + " " + modified_time[1].split(".")[0])
+        click.secho(click.style("File size : ",fg ='yellow', bold = True) + response["fileSize"] + "bytes")
+        click.secho(click.style("eTag : ",fg ='yellow', bold = True) + response["etag"])
+        if(response["published"]):
+            click.secho(click.style("Published : ",fg ='yellow', bold = True) + "Yes")
+        else:
+            click.secho(click.style("Published : ",fg ='yellow', bold = True) + "No")
+        if(response["pinned"]):
+            click.secho(click.style("Pinned : ",fg ='yellow', bold = True) + "Yes")
+        else:
+            click.secho(click.style("Pinned : ",fg ='yellow', bold = True) + "No")
+        click.secho(click.style("Permission Id : ",fg ='yellow', bold = True) + 
+                    user["permissionId"])
         
-
+    if(delete!= None):
+        click.secho("deleting.....", fg='magenta')
+        service = build('drive', 'v3', http=creds.authorize(Http()))
+        file_id = utils.get_fid(fid)
+        response = service.revisions().delete(fileId = file_id,
+                                    revisionId = delete).execute()
+        click.secho("revision" + delete + "successfully deleted", fg='green')
+        
+    if(save!=None):
+        click.secho("saving " + save + " revision premanently....", fg ='magenta')
+        service = build('drive', 'v3', http=creds.authorize(Http()))
+        file_id = utils.get_fid(fid)
+        response = service.revisions().update(body ={"keepForever" : True},
+                                    fileId = file_id,
+                                    revisionId = save).execute()
+        click.secho("svaed successfully", fg='green')
+        
+    if(delete == None and get == None and save == None):
+        file_id = utils.get_fid(fid)
+        file_name = utils.get_file(fid)["name"]
+        click.secho("fetching revision detail of " + file_name + ".....", fg = 'magenta')
+        service = build('drive', 'v3', http=creds.authorize(Http()))
+        response = service.revisions().list(fileId = file_id).execute()
+        revisions = response["revisions"]
+        for r in reversed(revisions):
+            modified_time = r["modifiedTime"].split("T")
+            click.secho(r["id"], fg = 'yellow')
+            click.secho("Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
+            click.secho("File : " + file_name + "\n")
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+'''{
+ "kind": "drive#revisionList",
+ "etag": "\"LIfz66WQFJW5vkUY9zfkRsF1GXw/cAdkdQMTXMCh_3oT-YWA6FEyMCU\"",
+ "selfLink": "https://www.googleapis.com/drive/v2/files/1SqAeRJ9nGhsOpfuM8no7UgVo12FlTITK/revisions",
+ "items": [
+  {
+   "kind": "drive#revision",
+   "etag": "\"LIfz66WQFJW5vkUY9zfkRsF1GXw/cmzMcRAI0C9VUWVzcxXpvvf03wc\"",
+   "id": "0B4L5Dr_gHSY6OTZmUklkMFZmd3F2WTRnZlowaXlFamczTzE4PQ",
+   "selfLink": "https://www.googleapis.com/drive/v2/files/1SqAeRJ9nGhsOpfuM8no7UgVo12FlTITK/revisions/0B4L5Dr_gHSY6OTZmUklkMFZmd3F2WTRnZlowaXlFamczTzE4PQ",
+   "mimeType": "text/x-python",
+   "modifiedDate": "2018-07-05T13:26:45.000Z",
+   "pinned": false,
+   "published": false,
+   "downloadUrl": "https://doc-00-5g-docs.googleusercontent.com/docs/securesc/6ah20rmabu97cqmtth1d4ue3aagc3ll1/6dl623q8mu4vmptdipgbikbg22jkkib0/1552665600000/09803741683778258860/09803741683778258860/1SqAeRJ9nGhsOpfuM8no7UgVo12FlTITK?rid=0B4L5Dr_gHSY6OTZmUklkMFZmd3F2WTRnZlowaXlFamczTzE4PQ&h=03733324259401406285&e=download&gd=true",
+   "lastModifyingUserName": "RAGHAV EC",
+   "lastModifyingUser": {
+    "kind": "drive#user",
+    "displayName": "RAGHAV EC",
+    "picture": {
+     "url": "https://lh6.googleusercontent.com/-sKJW1wmh8Fg/AAAAAAAAAAI/AAAAAAAACyU/eg0b_pgSlBU/s64/photo.jpg"
+    },
+    "isAuthenticatedUser": true,
+    "permissionId": "09803741683778258860",
+    "emailAddress": "raghav.ec.17@nsit.net.in"
+   },
+   "originalFilename": "dalmia.py",
+   "md5Checksum": "4324fc581e12c6e38a55fdd3822349b5",
+   "fileSize": "451"
+  }
+ ]
+}
+            
+            file_id = utils.get_fid(fid)
+    token = os.path.join(dirpath, 'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v2', http=creds.authorize(Http()))
+    response = service.revisions().list(fileId = file_id).execute()
+    revisions = response["items"]
+    for r in reversed(revisions):
+        modified_time = r["modifiedDate"].split("T")
+        user = r["lastModifyingUser"]
+        click.secho(r["id"], fg = 'yellow')
+        click.secho("File : " + r["originalFilename"] + " " + r["mimeType"])
+        click.secho("Author : " + r["lastModifyingUserName"] + " " + user["emailAddress"])
+        click.secho("Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
+        click.secho("File size : " + r["fileSize"] + "bytes\n")
+        '''
