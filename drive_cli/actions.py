@@ -459,3 +459,18 @@ def history(date, clear):
                                 click.secho("flags : ", bold=True)
                                 click.secho(flag_val)
                         click.secho("\n")
+
+
+@click.command('log')
+@click.argument('fid')
+def get_revision(fid):
+    file_id = utils.get_fid(fid)
+    token = os.path.join(dirpath, 'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v3', http=creds.authorize(Http()))
+    response = service.revisions().list(fileId = file_id).execute()
+    revisions = response["revisions"]
+    for r in revisions:
+        modified_time = r["modifiedTime"]
+        click.secho(modified_time, fg = 'yellow', bold = True)
