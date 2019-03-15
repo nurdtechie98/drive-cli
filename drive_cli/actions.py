@@ -460,7 +460,6 @@ def history(date, clear):
                                 click.secho(flag_val)
                         click.secho("\n")
 
-
 @click.command('log')
 @click.argument('fid')
 def get_revision(fid):
@@ -475,3 +474,4 @@ def get_revision(fid):
         modified_time = r["modifiedTime"]
         click.secho(modified_time, fg = 'yellow', bold = True)
         
+
