@@ -459,19 +459,19 @@ def history(date, clear):
                                 click.secho("flags : ", bold=True)
                                 click.secho(flag_val)
                         click.secho("\n")
-                        
+
 
 @click.command('log', short_help="It allows users to see who made edits and to revert to earlier versions of the same file.")
 @click.argument('fid')
-@click.option('--get', type= str, help ="provide revision id to get more info ")
-@click.option('--delete', type= str, help ="delete a particular revision")
-@click.option('--save', type=str, help ="To keep revision forever, even if it is no longer the head revision. If not set, the revision will be automatically purged 30 days after newer content is uploaded. ")
-def get_revision(fid,get,delete,save):
+@click.option('--get', type=str, help="provide revision id to get more info ")
+@click.option('--delete', type=str, help="delete a particular revision")
+@click.option('--save', type=str, help="To keep revision forever, even if it is no longer the head revision. If not set, the revision will be automatically purged 30 days after newer content is uploaded. ")
+def get_revision(fid, get, delete, save):
     '''
     It allows users to see who made edits and to revert to earlier versions of the same file.
     '''
-    cwd=os.getcwd()
-    flags={"--get":[get],"--delete":[delete],"--save":[save]}
+    cwd = os.getcwd()
+    flags = {"--get": [get], "--delete": [delete], "--save": [save]}
     utils.save_history([flags, fid, cwd])
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
@@ -480,54 +480,53 @@ def get_revision(fid,get,delete,save):
         click.secho("fetching....", fg='magenta')
         service = build('drive', 'v2', http=creds.authorize(Http()))
         file_id = utils.get_fid(fid)
-        response = service.revisions().get(fileId = file_id,
-                                    revisionId = get).execute()
+        response = service.revisions().get(fileId=file_id,
+                                           revisionId=get).execute()
         modified_time = response["modifiedDate"].split("T")
-        user = response["lastModifyingUser"]    
-        click.secho(click.style("File : ",fg ='yellow', bold = True) + response["originalFilename"] + " " + response["mimeType"])
-        click.secho(click.style("Link : ",fg ='yellow', bold = True) + response["selfLink"])
-        click.secho(click.style("Author : ",fg ='yellow', bold = True) + response["lastModifyingUserName"] + " " + user["emailAddress"])
-        click.secho(click.style("Date : ",fg ='yellow', bold = True) + modified_time[0] + " " + modified_time[1].split(".")[0])
-        click.secho(click.style("File size : ",fg ='yellow', bold = True) + response["fileSize"] + "bytes")
-        click.secho(click.style("eTag : ",fg ='yellow', bold = True) + response["etag"])
+        user = response["lastModifyingUser"]
+        click.secho(click.style("File : ", fg='yellow', bold=True) + response["originalFilename"] + " " + response["mimeType"])
+        click.secho(click.style("Link : ", fg='yellow', bold=True) + response["selfLink"])
+        click.secho(click.style("Author : ", fg='yellow', bold=True) + response["lastModifyingUserName"] + " " + user["emailAddress"])
+        click.secho(click.style("Date : ", fg='yellow', bold=True) + modified_time[0] + " " + modified_time[1].split(".")[0])
+        click.secho(click.style("File size : ", fg='yellow', bold=True) + response["fileSize"] + "bytes")
+        click.secho(click.style("eTag : ", fg='yellow', bold=True) + response["etag"])
         if(response["published"]):
-            click.secho(click.style("Published : ",fg ='yellow', bold = True) + "Yes")
+            click.secho(click.style("Published : ", fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Published : ",fg ='yellow', bold = True) + "No")
+            click.secho(click.style("Published : ", fg='yellow', bold=True) + "No")
         if(response["pinned"]):
-            click.secho(click.style("Pinned : ",fg ='yellow', bold = True) + "Yes")
+            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Pinned : ",fg ='yellow', bold = True) + "No")
-        click.secho(click.style("Permission Id : ",fg ='yellow', bold = True) + 
+            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "No")
+        click.secho(click.style("Permission Id : ", fg='yellow', bold=True) +
                     user["permissionId"])
-        
-    if(delete!= None):
+
+    if(delete != None):
         click.secho("deleting.....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
         file_id = utils.get_fid(fid)
-        response = service.revisions().delete(fileId = file_id,
-                                    revisionId = delete).execute()
+        response = service.revisions().delete(fileId=file_id,
+                                              revisionId=delete).execute()
         click.secho("revision" + delete + "successfully deleted", fg='green')
-        
-    if(save!=None):
-        click.secho("saving " + save + " revision premanently....", fg ='magenta')
+
+    if(save != None):
+        click.secho("saving " + save + " revision premanently....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
         file_id = utils.get_fid(fid)
-        response = service.revisions().update(body ={"keepForever" : True},
-                                    fileId = file_id,
-                                    revisionId = save).execute()
+        response = service.revisions().update(body={"keepForever": True},
+                                              fileId=file_id,
+                                              revisionId=save).execute()
         click.secho("svaed successfully", fg='green')
-        
+
     if(delete == None and get == None and save == None):
         file_id = utils.get_fid(fid)
         file_name = utils.get_file(fid)["name"]
-        click.secho("fetching revision detail of " + file_name + ".....", fg = 'magenta')
+        click.secho("fetching revision detail of " + file_name + ".....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
-        response = service.revisions().list(fileId = file_id).execute()
+        response = service.revisions().list(fileId=file_id).execute()
         revisions = response["revisions"]
         for r in reversed(revisions):
             modified_time = r["modifiedTime"].split("T")
-            click.secho(r["id"], fg = 'yellow')
+            click.secho(r["id"], fg='yellow')
             click.secho("Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
             click.secho("File : " + file_name + "\n")
-
