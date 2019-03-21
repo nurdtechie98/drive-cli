@@ -156,12 +156,14 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-<<<<<<< HEAD
 token.json
 .drivecli
 oauth.json
-=======
+
 .drivecli
 oauth.json
 token.json
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
+
+.drivecli
+oauth.json
+

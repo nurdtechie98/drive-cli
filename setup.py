@@ -1,9 +1,7 @@
 from drive_cli import __version__
 from setuptools import setup, find_packages
-<<<<<<< HEAD
+
 from setuptools.command.install import install
-=======
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
 
 
 def readme():

@@ -9,11 +9,14 @@
 
 [![PyPI version](https://badge.fury.io/py/drive-cli.svg)](https://badge.fury.io/py/drive-cli)
 [![Python version](https://img.shields.io/badge/python-3.4+-blue.svg)](https://www.python.org/download/releases/3.4.0/)
-<<<<<<< HEAD
+
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/nurdtechie98/drive-cli/issues)
-=======
+
 [![Build Status](https://travis-ci.org/nurdtechie98/drive-cli.svg?branch=dev)](https://travis-ci.org/nurdtechie98/drive-cli)
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
+
+
+[![Build Status](https://travis-ci.org/nurdtechie98/drive-cli.svg?branch=dev)](https://travis-ci.org/nurdtechie98/drive-cli)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![HitCount](http://hits.dwyl.io/nurdtechie98/drive-cli.svg)](http://hits.dwyl.io/nurdtechie98/drive-cli)
 
@@ -33,11 +36,13 @@
 
 - `view-files`: list your files; filter them by name, type.
 - `clone`: download file/folder from drive using sharing link or file ID and get it linked.
-<<<<<<< HEAD
+
 - `add_remote`: upload existing local file to drive and get it linked.
-=======
+
 - `add-remote`: upload existing local file to drive and get it linked.
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
+
+- `add-remote`: upload existing local file to drive and get it linked.
+
 - `cat`: view files contents of text format without actually downloading them.
 - `rm`: remove particular file or folder.
 - `ls`: list all the files present in the drive of equivalent current directory.
@@ -77,8 +82,7 @@
 ------------------------------------------
 ### Usage
 
-<<<<<<< HEAD
-=======
+
 #### Help 
 The help for any command in particular, or for the entire list of commands, can be displayed using the **help** command.
 ```sh
@@ -131,7 +135,6 @@ content added under directory test
 ```
 
 
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
 #### Clone
 Download a file or folder present in drive using its file id or its sharing link. In case it is a folder it gets tracked.
 
@@ -170,16 +173,12 @@ completed download of watson script
 
 ```
 
-<<<<<<< HEAD
-for further in depth documetation checkout our [wiki](https://github.com/nurdtechie98/drive-cli/wiki/How-to-use-%3F).
-
-=======
-
-=======
 for further in depth documetation checkout our [wiki](https://github.com/nurdtechie98/drive-cli/wiki/How-to-use-%3F).
 
 
->>>>>>> adb31daf311c92e5ec24dd7aee4a2dbe93849c88
+for further in depth documetation checkout our [wiki](https://github.com/nurdtechie98/drive-cli/wiki/How-to-use-%3F).
+
+
 ------------------------------------------
 ### Uninstalling
 
