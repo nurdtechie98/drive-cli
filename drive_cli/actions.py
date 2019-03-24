@@ -7,6 +7,7 @@ from httplib2 import Http
 from oauth2client import file
 from prettytable import PrettyTable
 from googleapiclient.discovery import build
+from prettytable import MSWORD_FRIENDLY
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dirpath)
@@ -530,3 +531,76 @@ def get_revision(fid, get, delete, save):
             click.secho(r["id"], fg='yellow')
             click.secho("Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
             click.secho("File : " + file_name + "\n")
+
+
+@click.command('file-info')
+@click.argument('fid')
+def file_info(fid):
+    click.secho("fetching....", fg='magenta')
+    cwd = os.getcwd()
+    utils.save_history([{}, fid, cwd])
+    token = os.path.join(dirpath, 'token.json')
+    store = file.Storage(token)
+    creds = store.get()
+    service = build('drive', 'v2', http=creds.authorize(Http()))
+    file_id = utils.get_fid(fid)
+    t = PrettyTable(["Genreal Info", "", " "])
+    t.align = "l"
+    f = service.files().get(fileId=file_id).execute()
+    t.add_row(["", "Name", f["title"]])
+    t.add_row(["", "ID", f["id"]])
+    t.add_row(["", "Mime Type", f["mimeType"]])
+    t.add_row(["", "Self Link", f["selfLink"]])
+    t.add_row(["", "e-tag", f["etag"]])
+    date_time = f["createdDate"].split("T")
+    date = date_time[0]
+    time = date_time[1].split(".")[0]
+    t.add_row(["", "created date", date + " " + time])
+    t.add_row(["", "can edit", str(f["capabilities"]["canEdit"]) + "\n"])
+    try:
+        parents = service.parents().list(fileId=file_id).execute()
+        if len(parents["items"]) != 0:
+            t.add_row(["Parent Info", "", " "])
+            for parent in parents["items"]:
+                parent_name = utils.get_file(parent["id"])["name"]
+                t.add_row(["", "Name", parent_name])
+                t.add_row(["", "ID", parent["id"]])
+                t.add_row(["", "Link", parent["parentLink"] + "\n"])
+    except:
+        pass
+    try:
+        permissions = service.permissions().list(fileId=file_id).execute()
+        t.add_row(["Permissions", "", " "])
+        per_num = 0
+        for permission in permissions["items"]:
+            per_num = per_num + 1
+            if "name" in permission:
+                t.add_row([per_num, "User name", permission["name"]])
+                try:
+                    t.add_row(["", "email address", permission["emailAddress"]])
+                except KeyError:
+                    t.add_row(["", "domain name", permission["domain"]])
+            else:
+                t.add_row([per_num, permission["id"], ""])
+            t.add_row(["", "role", permission["role"]])
+            t.add_row(["", "type", permission["type"] + "\n"])
+    except:
+        pass
+    try:
+        revisions = service.revisions().list(fileId=file_id).execute()
+        t.add_row(["Revision", "", " "])
+        rev_num = 0
+        for rev in revisions["items"]:
+            rev_num = rev_num + 1
+            t.add_row([rev_num, "ID", rev["id"]])
+            t.add_row(["", "modified by", rev["lastModifyingUser"]["displayName"]])
+            t.add_row(["", "email address", rev["lastModifyingUser"]["emailAddress"]])
+            date_time = rev["modifiedDate"].split("T")
+            date = date_time[0]
+            time = date_time[1].split(".")[0]
+            t.add_row(["", "modified date", date + " " + time])
+            t.add_row(["", "file size", rev["fileSize"] + "\n"])
+    except:
+        pass
+    t.set_style(MSWORD_FRIENDLY)
+    print(t)
