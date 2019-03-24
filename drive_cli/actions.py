@@ -533,7 +533,7 @@ def get_revision(fid, get, delete, save):
             click.secho("File : " + file_name + "\n")
 
 
-@click.command('file-info', short_help = "get information about file/folder")
+@click.command('file-info', short_help="get information about file/folder")
 @click.argument('fid')
 def file_info(fid):
     click.secho("fetching....", fg='magenta')
