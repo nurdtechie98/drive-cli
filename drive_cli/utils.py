@@ -35,13 +35,9 @@ def save_history(info):
     date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S").split(" ")
     date = date_time[0]
     time = date_time[1]
-    commands = sys.argv
-    command = commands[1]
-    commands[2:]
-    commands = " ".join(commands).split("--")
-    commands = commands[1:]
+    command = sys.argv
     log = {"cwd": info[2],
-           "command": "drive " + command,
+           "command": "drive " + command[1],
            "arg": info[1],
            "flags": info[0]
            }
