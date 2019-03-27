@@ -12,11 +12,15 @@ If you wish to contribute to the project/ modify it/build it locally you can set
 <p align="center">
    <img src="rename.png">
 </p>
+<br>
+<br>
 you will need an authentication file which will be unique to every user which you can download from <a href="https://console.cloud.google.com/apis/credentials/oauthclient">Oauth</a>
 
 <p align="center">
    <img src="authen.png">
 </p>
+<br>
+<br>
 Fill the detail as per the requirement .You will be redirected to page from where client_secret.json can be downloaded.Rename it to oauth.json and place it in drive_cli directory.
 
 <p align="center">
