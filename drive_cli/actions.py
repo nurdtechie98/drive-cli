@@ -7,9 +7,12 @@ from httplib2 import Http
 from oauth2client import file
 from prettytable import PrettyTable
 from googleapiclient.discovery import build
+from mimetypes import MimeTypes
+
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dirpath)
+mime = MimeTypes()
 
 
 @click.command('view-files', short_help='filter search files and file ID for files user has access to')
@@ -30,47 +33,46 @@ def view_file(name, types, pid):
         q_name = click.prompt('enter the search value')
         query = "name contains '" + q_name + "' "
     if types:
-        mimeTypes = {
-            "xls": 'application/vnd.ms-excel',
-            "xlsx": 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            "xml": 'text/xml',
-            "ods": 'application/vnd.oasis.opendocument.spreadsheet',
-            "csv": 'text/plain',
-            "tmpl": 'text/plain',
-            "pdf": 'application/pdf',
-            "php": 'application/x-httpd-php',
-            "jpg": 'image/jpeg',
-            "png": 'image/png',
-            "gif": 'image/gif',
-            "bmp": 'image/bmp',
-            "txt": 'text/plain',
-            "doc": 'application/msword',
-            "js": 'text/js',
-            "swf": 'application/x-shockwave-flash',
-            "mp3": 'audio/mpeg',
-            "zip": 'application/zip',
-            "rar": 'application/rar',
-            "tar": 'application/tar',
-            "arj": 'application/arj',
-            "cab": 'application/cab',
-            "html": 'text/html',
-            "htm": 'text/html',
-            "default": 'application/octet-stream',
-            "audio": 'application/vnd.google-apps.audio',
-            "Google Docs": 'application/vnd.google-apps.document',
-            "Google Drawing": 'application/vnd.google-apps.drawing',
-            "Google Drive file": 'application/vnd.google-apps.file',
-            "Google Forms": 'application/vnd.google-apps.form',
-            "Google Fusion Tables": 'application/vnd.google-apps.fusiontable',
-            "Google My Maps": 'application/vnd.google-apps.map',
-            "Google Photos": 'application/vnd.google-apps.photo',
-            "Google Slides": 'application/vnd.google-apps.presentation',
-            "Google Apps Scripts": 'application/vnd.google-apps.script',
-            "Google Sites": 'application/vnd.google-apps.site',
-            "Google Sheets": 'application/vnd.google-apps.spreadsheet',
-            "3rd party shortcut": 'application/vnd.google-apps.drive-sdk',
-            "folder": 'application/vnd.google-apps.folder'
-        }
+        mimeTypes = {extension: mime.guess_type("placeholder_filename." + extension)[0] for extension
+                     in ("xls",
+                         "xlsx",
+                         "xml",
+                         "ods",
+                         "csv",
+                         "pdf",
+                         "jpg",
+                         "png",
+                         "gif",
+                         "bmp",
+                         "txt",
+                         "doc",
+                         "js",
+                         "swf",
+                         "mp3",
+                         "zip",
+                         "rar",
+                         "tar",
+                         "cab",
+                         "html",
+                         "htm")}
+        mimeTypes.update({'tmpl': 'text/plain',
+                          'php': 'application/x-httpd-php',
+                          'arj': 'application/arj',
+                          "default": 'application/octet-stream',
+                          "audio": 'application/vnd.google-apps.audio',
+                          "Google Docs": 'application/vnd.google-apps.document',
+                          "Google Drawing": 'application/vnd.google-apps.drawing',
+                          "Google Drive file": 'application/vnd.google-apps.file',
+                          "Google Forms": 'application/vnd.google-apps.form',
+                          "Google Fusion Tables": 'application/vnd.google-apps.fusiontable',
+                          "Google My Maps": 'application/vnd.google-apps.map',
+                          "Google Photos": 'application/vnd.google-apps.photo',
+                          "Google Slides": 'application/vnd.google-apps.presentation',
+                          "Google Apps Scripts": 'application/vnd.google-apps.script',
+                          "Google Sites": 'application/vnd.google-apps.site',
+                          "Google Sheets": 'application/vnd.google-apps.spreadsheet',
+                          "3rd party shortcut": 'application/vnd.google-apps.drive-sdk',
+                          "folder": 'application/vnd.google-apps.folder'})
         promptMessage = 'Choose a media type to filter \n(press SPACE to mark, ENTER to continue, s to stop):'
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
