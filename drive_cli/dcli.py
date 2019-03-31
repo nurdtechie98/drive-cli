@@ -35,6 +35,12 @@ cli.add_command(actions.push)
 
 cli.add_command(actions.share)
 
+cli.add_command(actions.history)
+
+cli.add_command(actions.get_revision)
+
+cli.add_command(actions.file_info)
+
 cli.add_command(auth.logout)
 
 if __name__ == '__main__':

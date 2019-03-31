@@ -8,6 +8,7 @@ import json
 import time
 from mimetypes import MimeTypes
 from pick import Picker
+from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
@@ -16,6 +17,42 @@ from oauth2client import file
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 mime = MimeTypes()
+
+
+def get_history():
+    hist_path = os.path.join(dirpath, '.history')
+    if not os.path.isfile(hist_path):
+        with open(hist_path, 'w')as outfile:
+            history = {}
+            json.dump(history, outfile)
+    else:
+        with open(hist_path, 'r') as infile:
+            history = json.load(infile)
+    return history
+
+
+def save_history(info):
+    date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S").split(" ")
+    date = date_time[0]
+    time = date_time[1]
+    command = sys.argv
+    log = {"cwd": info[2],
+           "command": "drive " + command[1],
+           "arg": info[1],
+           "flags": info[0]
+           }
+    hist_path = os.path.join(dirpath, '.history')
+    history = get_history()
+    if not (date in history):
+        history[date] = {}
+    history[date][time] = log
+    with open(hist_path, 'w') as outfile:
+        json.dump(history, outfile)
+
+
+def clear_history():
+    hist_path = os.path.join(dirpath, '.history')
+    os.remove(hist_path)
 
 
 def go_back(picker):
