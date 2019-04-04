@@ -652,6 +652,7 @@ def drive_ignore(unttrack_file, l):
 
     if l:
         click.secho("listing untracked files....", fg="magenta")
+        utils.save_history([{"-l": ["True"]}, " ", cwd])
         if os.path.isfile(drive_ignore_path):
             file = open(drive_ignore_path, 'r')
             untracked_files = file.read()
@@ -660,3 +661,5 @@ def drive_ignore(unttrack_file, l):
         else:
             click.secho(".driveignore file doesn't exist in " + cwd, fg="red")
             sys.exit(0)
+    else:
+        utils.save_history([{"-l": [None]}, " ", cwd])
