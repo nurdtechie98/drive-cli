@@ -41,6 +41,8 @@ cli.add_command(actions.get_revision)
 
 cli.add_command(actions.file_info)
 
+cli.add_command(actions.drive_ignore)
+
 cli.add_command(auth.logout)
 
 if __name__ == '__main__':

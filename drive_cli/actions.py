@@ -424,7 +424,8 @@ def history(date, clear):
                 history = History[date]
                 for i in history:
                     click.secho(date + "  " + i, fg='yellow', bold=True)
-                    click.secho("working directory : " + history[i]["cwd"], bold=True)
+                    click.secho("working directory : " +
+                                history[i]["cwd"], bold=True)
                     click.secho("command : " + history[i]["command"])
                     if(history[i]["arg"] != ""):
                         click.secho("argument : " + history[i]["arg"])
@@ -448,7 +449,8 @@ def history(date, clear):
                     history = History[date]
                     for i in history:
                         click.secho(date + "  " + i, fg='yellow', bold=True)
-                        click.secho("working directory : " + history[i]["cwd"], bold=True)
+                        click.secho("working directory : " +
+                                    history[i]["cwd"], bold=True)
                         click.secho("command : " + history[i]["command"])
                         if(history[i]["arg"] != ""):
                             click.secho("argument : " + history[i]["arg"])
@@ -487,20 +489,30 @@ def get_revision(fid, get, delete, save):
                                            revisionId=get).execute()
         modified_time = response["modifiedDate"].split("T")
         user = response["lastModifyingUser"]
-        click.secho(click.style("File : ", fg='yellow', bold=True) + response["originalFilename"] + " " + response["mimeType"])
-        click.secho(click.style("Link : ", fg='yellow', bold=True) + response["selfLink"])
-        click.secho(click.style("Author : ", fg='yellow', bold=True) + response["lastModifyingUserName"] + " " + user["emailAddress"])
-        click.secho(click.style("Date : ", fg='yellow', bold=True) + modified_time[0] + " " + modified_time[1].split(".")[0])
-        click.secho(click.style("File size : ", fg='yellow', bold=True) + response["fileSize"] + "bytes")
-        click.secho(click.style("eTag : ", fg='yellow', bold=True) + response["etag"])
+        click.secho(click.style("File : ", fg='yellow', bold=True) +
+                    response["originalFilename"] + " " + response["mimeType"])
+        click.secho(click.style("Link : ", fg='yellow',
+                                bold=True) + response["selfLink"])
+        click.secho(click.style("Author : ", fg='yellow', bold=True) +
+                    response["lastModifyingUserName"] + " " + user["emailAddress"])
+        click.secho(click.style("Date : ", fg='yellow', bold=True) +
+                    modified_time[0] + " " + modified_time[1].split(".")[0])
+        click.secho(click.style("File size : ", fg='yellow',
+                                bold=True) + response["fileSize"] + "bytes")
+        click.secho(click.style("eTag : ", fg='yellow',
+                                bold=True) + response["etag"])
         if(response["published"]):
-            click.secho(click.style("Published : ", fg='yellow', bold=True) + "Yes")
+            click.secho(click.style("Published : ",
+                                    fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Published : ", fg='yellow', bold=True) + "No")
+            click.secho(click.style("Published : ",
+                                    fg='yellow', bold=True) + "No")
         if(response["pinned"]):
-            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "Yes")
+            click.secho(click.style(
+                "Pinned : ", fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "No")
+            click.secho(click.style(
+                "Pinned : ", fg='yellow', bold=True) + "No")
         click.secho(click.style("Permission Id : ", fg='yellow', bold=True) +
                     user["permissionId"])
 
@@ -513,7 +525,8 @@ def get_revision(fid, get, delete, save):
         click.secho("revision" + delete + "successfully deleted", fg='green')
 
     if(save != None):
-        click.secho("saving " + save + " revision premanently....", fg='magenta')
+        click.secho("saving " + save +
+                    " revision premanently....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
         file_id = utils.get_fid(fid)
         response = service.revisions().update(body={"keepForever": True},
@@ -524,14 +537,16 @@ def get_revision(fid, get, delete, save):
     if(delete == None and get == None and save == None):
         file_id = utils.get_fid(fid)
         file_name = utils.get_file(fid)["name"]
-        click.secho("fetching revision detail of " + file_name + ".....", fg='magenta')
+        click.secho("fetching revision detail of " +
+                    file_name + ".....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
         response = service.revisions().list(fileId=file_id).execute()
         revisions = response["revisions"]
         for r in reversed(revisions):
             modified_time = r["modifiedTime"].split("T")
             click.secho(r["id"], fg='yellow')
-            click.secho("Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
+            click.secho(
+                "Date : " + modified_time[0] + " " + modified_time[1].split(".")[0])
             click.secho("File : " + file_name + "\n")
 
 
@@ -579,7 +594,8 @@ def file_info(fid):
             if "name" in permission:
                 t.add_row([per_num, "User name", permission["name"]])
                 try:
-                    t.add_row(["", "email address", permission["emailAddress"]])
+                    t.add_row(
+                        ["", "email address", permission["emailAddress"]])
                 except KeyError:
                     t.add_row(["", "domain name", permission["domain"]])
             else:
@@ -595,8 +611,10 @@ def file_info(fid):
         for rev in revisions["items"]:
             rev_num = rev_num + 1
             t.add_row([rev_num, "ID", rev["id"]])
-            t.add_row(["", "modified by", rev["lastModifyingUser"]["displayName"]])
-            t.add_row(["", "email address", rev["lastModifyingUser"]["emailAddress"]])
+            t.add_row(
+                ["", "modified by", rev["lastModifyingUser"]["displayName"]])
+            t.add_row(
+                ["", "email address", rev["lastModifyingUser"]["emailAddress"]])
             date_time = rev["modifiedDate"].split("T")
             date = date_time[0]
             time = date_time[1].split(".")[0]
@@ -606,3 +624,39 @@ def file_info(fid):
         pass
     t.set_style(MSWORD_FRIENDLY)
     print(t)
+
+
+@click.command('ignore', short_help="never track the listed local file and folders of current working directory")
+@click.argument('unttrack_file', nargs=-1)
+@click.option('-l', is_flag=bool, help="list out all the untracked files")
+def drive_ignore(unttrack_file, l):
+    cwd = os.getcwd()
+    drive_ignore_path = os.path.join(cwd, '.driveignore')
+    if(len(unttrack_file) != 0):
+        try:
+            file = open(drive_ignore_path, 'r')
+            files = file.readlines()
+            file.close()
+        except:
+            files = []
+        file = open(drive_ignore_path, 'a+')
+        for f in unttrack_file:
+            f = f + "\n"
+            file_path = os.path.join(cwd, f[:-1])
+            if os.path.exists(file_path):
+                if not (f in files):
+                    file.write(f)
+            else:
+                click.secho(f[:-1] + " doesn't exist in " + cwd, fg="red")
+        file.close()
+
+    if l:
+        click.secho("listing untracked files....", fg="magenta")
+        if os.path.isfile(drive_ignore_path):
+            file = open(drive_ignore_path, 'r')
+            untracked_files = file.read()
+            click.secho(untracked_files)
+            file.close()
+        else:
+            click.secho(".driveignore file doesn't exist in " + cwd, fg="red")
+            sys.exit(0)
