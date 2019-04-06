@@ -447,7 +447,7 @@ def history(date, clear):
                 for date in History:
                     history = History[date]
                     for i in history:
-                        click.secho(date + "  " + i, fg='yellow', bold=True
+                        click.secho(date + "  " + i, fg='yellow', bold=True)
                         click.secho("working directory : " + history[i]["cwd"], bold=True)
                         click.secho("command : " + history[i]["command"])
                         if(history[i]["arg"] != ""):
