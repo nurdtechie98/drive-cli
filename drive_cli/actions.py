@@ -373,9 +373,9 @@ def share(fid, role, type, message):
 
     else:
         if(type == "user"):
-            email_id = click.prompt("Enetr email address of user ")
+            email_id = click.prompt("Enter email address of user ")
         else:
-            email_id = click.prompt("Enetr email address of a google group ")
+            email_id = click.prompt("Enter email address of a google group ")
         flags["Email ID"] = email_id
         if(role == "owner"):
             transfer_ownership = True
@@ -396,7 +396,7 @@ def share(fid, role, type, message):
             if(list(response.keys())[0] == "error"):
                 click.secho(response["error"]["message"], fg='red')
             else:
-                click.secho("successfully share", fg='green')
+                click.secho("successfully shared", fg='green')
         except:
             error_message = str(sys.exc_info()[1])
             error_message = error_message.split('\"')[1]
