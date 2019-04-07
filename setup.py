@@ -1,6 +1,5 @@
 from drive_cli import __version__
 from setuptools import setup, find_packages
-from setuptools.command.install import install
 
 
 def readme():
@@ -24,16 +23,16 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'requests',
-        'click',
-        'colorama',
+        'requests==2.21.0',
+        'click==7.0',
+        'colorama==0.4.1',
         'windows-curses;platform_system=="Windows"',
-        'pick',
-        'google-api-python-client',
-        'oauth2client',
-        'prettytable',
-        'httplib2',
-        'pyfiglet'
+        'pick==0.6.4',
+        'google-api-python-client==1.7.8',
+        'oauth2client==4.1.3',
+        'prettytable==0.7.2',
+        'httplib2==0.12.1',
+        'pyfiglet==0.8.post1'
     ],
     entry_points={
         'console_scripts': [
