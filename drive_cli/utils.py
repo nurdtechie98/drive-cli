@@ -126,7 +126,8 @@ def get_request(service, fid, mimeType):
                              "cab",
                              "html",
                              "htm")}
-            mimeTypes.update({'tmpl': 'text/plain', 'php': 'application/x-httpd-php', 'arj': 'application/arj'})
+            mimeTypes.update(
+                {'tmpl': 'text/plain', 'php': 'application/x-httpd-php', 'arj': 'application/arj'})
         promptMessage = 'Choose type to export to \n(ENTER to select, s to stop):'
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
@@ -436,8 +437,20 @@ def pull_content(cwd, fid):
     drive_data(data)
 
 
-def list_status(cwd, sync_time):
+def list_local(cwd):
     local_lis = os.listdir(cwd)
+    drive_ignore_path = os.path.join(cwd, '.driveignore')
+    if os.path.isfile(drive_ignore_path):
+        file = open(drive_ignore_path, 'r')
+        untracked_files = file.readlines()
+        for f in untracked_files:
+            local_lis.remove(f[:-1])
+        file.close()
+    return local_lis
+
+
+def list_status(cwd, sync_time):
+    local_lis = list_local(cwd)
     changes = 0
     for item in local_lis:
         item_path = os.path.join(cwd, item)
@@ -458,7 +471,7 @@ def list_status(cwd, sync_time):
 
 def push_content(cwd, fid):
     drive_lis = get_child(cwd)
-    local_lis = os.listdir(cwd)
+    local_lis = list_local(cwd)
     data = drive_data()
     for item in local_lis:
         item_path = os.path.join(cwd, item)
