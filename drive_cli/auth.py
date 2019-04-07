@@ -1,3 +1,4 @@
+from . import utils
 import os
 import click
 import pyfiglet
@@ -29,7 +30,8 @@ def login(remote):
 
 @click.command('login', short_help='login to your google account and authenticate the service')
 def loggin():
-    pass
+    cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
 
 
 @click.command('logout', short_help='logout from the account logged in with')
@@ -37,6 +39,8 @@ def logout():
     '''
     logout: logout from the account that has been logged in
     '''
+    cwd = os.getcwd()
+    utils.save_history([{}, "", cwd])
     token = os.path.join(dirpath, 'token.json')
     store = file.Storage(token)
     creds = store.get()
