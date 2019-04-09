@@ -777,6 +777,7 @@ def status():
     list_status(cwd, sync_time)
 
 
+
 @cli.command('pull', short_help='get latest updates from online drive of the file')
 def pull():
     data = drive_data()
@@ -834,6 +835,15 @@ def destroyToken():
     click.secho("Logged Out successfully\nUse:")
     click.secho("drive login", bold=True, fg='green')
     click.secho("to login again")
+    
+cli.add_command(actions.history)
+
+cli.add_command(actions.get_revision)
+
+cli.add_command(actions.file_info)
+
+cli.add_command(auth.logout)
+
 
 if __name__ == '__main__':
     login()
