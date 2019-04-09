@@ -17,7 +17,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
 from oauth2client import file, client, tools
-from .utils import MIMETYPES
+
 import pyfiglet
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
