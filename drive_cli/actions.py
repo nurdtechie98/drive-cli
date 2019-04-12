@@ -49,7 +49,7 @@ def view_file(name, types, pid):
                          "gif",
                          "bmp",
                          "txt",
-                         "doc",
+                         "docx",
                          "js",
                          "swf",
                          "mp3",
