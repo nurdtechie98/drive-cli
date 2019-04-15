@@ -374,33 +374,36 @@ def share(fid, role, type, message):
     else:
         if(type == "user"):
             email_id = click.prompt("Enter email address of user ")
+            email_id = email_id.split(" ")
         else:
             email_id = click.prompt("Enter email address of a google group ")
+            email_id = email_id.split(" ")
         flags["Email ID"] = email_id
         if(role == "owner"):
             transfer_ownership = True
         else:
             transfer_ownership = False
-        request = {
-            "role": role,
-            "type": type,
-            "emailAddress": email_id
-        }
-        try:
-            response = service.permissions().create(body=request,
-                                                    fileId=file_id,
-                                                    emailMessage=message,
-                                                    sendNotificationEmail=True,
-                                                    transferOwnership=transfer_ownership,
-                                                    fields='id').execute()
-            if(list(response.keys())[0] == "error"):
-                click.secho(response["error"]["message"], fg='red')
-            else:
-                click.secho("successfully shared", fg='green')
-        except:
-            error_message = str(sys.exc_info()[1])
-            error_message = error_message.split('\"')[1]
-            click.secho(error_message, fg='red')
+        for email in email_id:
+            request = {
+                "role": role,
+                "type": type,
+                "emailAddress": email
+            }
+            try:
+                response = service.permissions().create(body=request,
+                                                        fileId=file_id,
+                                                        emailMessage=message,
+                                                        sendNotificationEmail=True,
+                                                        transferOwnership=transfer_ownership,
+                                                        fields='id').execute()
+                if(list(response.keys())[0] == "error"):
+                    click.secho(response["error"]["message"], fg='red')
+                else:
+                    click.secho("successfully shared to " + email, fg='green')
+            except:
+                error_message = str(sys.exc_info()[1])
+                error_message = error_message.split('\"')[1]
+                click.secho(error_message, fg='red')
     utils.save_history([flags, fid, cwd])
 
 
