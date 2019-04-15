@@ -1,4 +1,4 @@
-from . import utils
+from drive_cli import utils
 import os
 import click
 import pyfiglet
@@ -10,7 +10,9 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 
 
 def login(remote):
+
     try:
+
         token = os.path.join(dirpath, 'token.json')
         store = file.Storage(token)
         creds = store.get()
@@ -21,16 +23,14 @@ def login(remote):
         flags = tools.argparser.parse_args(args=[])
         if remote:
             flags.noauth_local_webserver = True
-        try:
-            creds = tools.run_flow(flow, store, flags)
-        except SystemExit as err:print(repr(err))
-        print("hello")
+        creds = tools.run_flow(flow, store, flags)
         click.secho(
             "********************** welcome to **********************", bold=True, fg='red')
         result = pyfiglet.figlet_format("Drive - CLI", font="slant")
         click.secho(result, fg='yellow')
         click.secho(
-            "********************************************************", bold=True, f
+            "********************************************************", bold=True, fg='red')
+
 
 @click.command('login', short_help='login to your google account and authenticate the service')
 def loggin():

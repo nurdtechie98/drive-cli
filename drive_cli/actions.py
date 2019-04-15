@@ -487,20 +487,30 @@ def get_revision(fid, get, delete, save):
                                            revisionId=get).execute()
         modified_time = response["modifiedDate"].split("T")
         user = response["lastModifyingUser"]
-        click.secho(click.style("File : ", fg='yellow', bold=True) + response["originalFilename"] + " " + response["mimeType"])
-        click.secho(click.style("Link : ", fg='yellow', bold=True) + response["selfLink"])
-        click.secho(click.style("Author : ", fg='yellow', bold=True) + response["lastModifyingUserName"] + " " + user["emailAddress"])
-        click.secho(click.style("Date : ", fg='yellow', bold=True) + modified_time[0] + " " + modified_time[1].split(".")[0])
-        click.secho(click.style("File size : ", fg='yellow', bold=True) + response["fileSize"] + "bytes")
-        click.secho(click.style("eTag : ", fg='yellow', bold=True) + response["etag"])
+        click.secho(click.style("File : ", fg='yellow', bold=True) +
+                    response["originalFilename"] + " " + response["mimeType"])
+        click.secho(click.style("Link : ", fg='yellow',
+                                bold=True) + response["selfLink"])
+        click.secho(click.style("Author : ", fg='yellow', bold=True) +
+                    response["lastModifyingUserName"] + " " + user["emailAddress"])
+        click.secho(click.style("Date : ", fg='yellow', bold=True) +
+                    modified_time[0] + " " + modified_time[1].split(".")[0])
+        click.secho(click.style("File size : ", fg='yellow',
+                                bold=True) + response["fileSize"] + "bytes")
+        click.secho(click.style("eTag : ", fg='yellow',
+                                bold=True) + response["etag"])
         if(response["published"]):
-            click.secho(click.style("Published : ", fg='yellow', bold=True) + "Yes")
+            click.secho(click.style("Published : ",
+                                    fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Published : ", fg='yellow', bold=True) + "No")
+            click.secho(click.style("Published : ",
+                                    fg='yellow', bold=True) + "No")
         if(response["pinned"]):
-            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "Yes")
+            click.secho(click.style(
+                "Pinned : ", fg='yellow', bold=True) + "Yes")
         else:
-            click.secho(click.style("Pinned : ", fg='yellow', bold=True) + "No")
+            click.secho(click.style(
+                "Pinned : ", fg='yellow', bold=True) + "No")
         click.secho(click.style("Permission Id : ", fg='yellow', bold=True) +
                     user["permissionId"])
 
@@ -513,7 +523,8 @@ def get_revision(fid, get, delete, save):
         click.secho("revision" + delete + "successfully deleted", fg='green')
 
     if(save != None):
-        click.secho("saving " + save + " revision premanently....", fg='magenta')
+        click.secho("saving " + save +
+                    " revision premanently....", fg='magenta')
         service = build('drive', 'v3', http=creds.authorize(Http()))
         file_id = utils.get_fid(fid)
         response = service.revisions().update(body={"keepForever": True},
@@ -606,3 +617,42 @@ def file_info(fid):
         pass
     t.set_style(MSWORD_FRIENDLY)
     print(t)
+
+
+@click.command('ignore', short_help="never track the listed local file and folders of current working directory")
+@click.argument('unttrack_file', nargs=-1)
+@click.option('-l', is_flag=bool, help="list out all the untracked files")
+def drive_ignore(unttrack_file, l):
+    cwd = os.getcwd()
+    drive_ignore_path = os.path.join(cwd, '.driveignore')
+    if(len(unttrack_file) != 0):
+        try:
+            file = open(drive_ignore_path, 'r')
+            files = file.readlines()
+            file.close()
+        except:
+            files = []
+        file = open(drive_ignore_path, 'a+')
+        for f in unttrack_file:
+            f = f + "\n"
+            file_path = os.path.join(cwd, f[:-1])
+            if os.path.exists(file_path):
+                if not (f in files):
+                    file.write(f)
+            else:
+                click.secho(f[:-1] + " doesn't exist in " + cwd, fg="red")
+        file.close()
+
+    if l:
+        click.secho("listing untracked files....", fg="magenta")
+        utils.save_history([{"-l": ["True"]}, " ", cwd])
+        if os.path.isfile(drive_ignore_path):
+            file = open(drive_ignore_path, 'r')
+            untracked_files = file.read()
+            click.secho(untracked_files)
+            file.close()
+        else:
+            click.secho(".driveignore file doesn't exist in " + cwd, fg="red")
+            sys.exit(0)
+    else:
+        utils.save_history([{"-l": [None]}, " ", cwd])
