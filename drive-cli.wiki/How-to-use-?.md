@@ -230,8 +230,3 @@ Options:
                   via drive-cli'
   --help          Show this message and exit.
  ```
-<<<<<<< HEAD
- 
-=======
- 
->>>>>>> ed6cab20d411bdb0b8ebf302278ba9660bae6357
