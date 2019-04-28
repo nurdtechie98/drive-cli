@@ -65,6 +65,17 @@ Options:
 
 
 ## clone
+ Downloads the file directory into the local machine
+ ```sh
+ $ drive clone fileID
+ Usage: drive clone [OPTIONS] PAYLOAD
+
+  clone: download a file/folder  using either the sharing link or using the
+  file ID  for the file
+
+Options:
+  --help  Show this message and exit.
+```
 
 ## add_remote
 It will upload all files present in your current directory to your google drive.
@@ -183,6 +194,19 @@ Usage: drive push [OPTIONS]
 Options:
   --help  Show this message and exit.
 ```
+## History
+Provides history of use of various functions in drive-cli for the current session
+
+```sh
+$ drive history
+Usage: drive history [OPTIONS]
+
+Options:
+  --date TEXT  specify the date to filter out your history
+  --clear      clear entire histroy
+  --help       Show this message and exit.
+```
+
  ## share
  ```sh
  Usage: drive share [OPTIONS] FID
