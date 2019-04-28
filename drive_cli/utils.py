@@ -85,7 +85,11 @@ def get_request(service, fid, mimeType):
             mimeTypes = {extension: mime.guess_type("placeholder_filename." + extension)[0] for extension
                          in ("pdf",
                              "txt",
+
                              "docx",
+
+                             "doc",
+
                              "zip",
                              "html",
                              "rtf",
@@ -116,7 +120,11 @@ def get_request(service, fid, mimeType):
                              "gif",
                              "bmp",
                              "txt",
+
                              "docx",
+
+                             "doc",
+
                              "js",
                              "swf",
                              "mp3",

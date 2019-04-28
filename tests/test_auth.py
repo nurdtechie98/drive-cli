@@ -1,5 +1,8 @@
 import unittest
 from drive_cli.auth import (login)
+from drive_cli.dcli import (login, refresh, dirpath)
+
+from drive_cli.auth import (login)
 
 
 class TestAuth(unittest.TestCase):
@@ -15,11 +18,20 @@ class TestAuth(unittest.TestCase):
         Test when auth token in correct
             refresh current encoded token for auth to pass
         '''
+
+        refresh()
+
         login(remote=False)
         print("DONE LOGIN")
 
 
 if __name__ == "__main__":
     # Test path
+
     # dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
+
+    dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
+
+    # dirpath = "/home/travis/build/nurdtechie98/drive-cli/drive_cli"
+
     unittest.main()
