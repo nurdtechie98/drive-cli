@@ -1,4 +1,4 @@
-from . import utils
+from drive_cli import utils
 import os
 import click
 import pyfiglet
@@ -10,9 +10,13 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 
 
 def login(remote):
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
+
+    try:
+
+        token = os.path.join(dirpath, 'token.json')
+        store = file.Storage(token)
+        creds = store.get()
+    except KeyError as err:print(repr(err))
     if not creds or creds.invalid:
         client_id = os.path.join(dirpath, 'oauth.json')
         flow = client.flow_from_clientsecrets(client_id, SCOPES)
