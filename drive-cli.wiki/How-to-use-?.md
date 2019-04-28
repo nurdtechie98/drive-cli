@@ -184,7 +184,7 @@ Options:
   --help  Show this message and exit.
 ```
  ## share
- ``sh
+ ```sh
  Usage: drive share [OPTIONS] FID
 
   share file/folder using using either the sharing link or using the file ID
@@ -205,5 +205,5 @@ Options:
                   [Default]:'shared
                   via drive-cli'
   --help          Show this message and exit.
- ``
+ ```
  
