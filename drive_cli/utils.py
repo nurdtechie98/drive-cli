@@ -347,7 +347,7 @@ def concat(fid):
     done = False
     while done is False:
         status, done = downloader.next_chunk()
-    print(fh.getvalue().decode('utf-8'))
+    print(fh.getvalue().decode('ISO-8859-1'))
 
 
 def identify_mimetype(name):

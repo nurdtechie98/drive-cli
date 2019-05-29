@@ -255,7 +255,12 @@ def view(link):
     cwd = os.getcwd()
     utils.save_history([{}, link, cwd])
     fid = utils.get_fid(link)
-    utils.concat(fid)
+    try:
+        utils.concat(fid)
+    except:
+        error_message = str(sys.exc_info()[1])
+        click.secho(error_message, fg='red')
+
 
 
 @click.command('status', short_help='list changes committed since last sync')
