@@ -369,7 +369,7 @@ def upload_file(name, path, pid):
         'parents': [pid],
         'mimeType': file_mimeType
     }
-    if os.stat(filename).st_size <= 256*1024:
+    if os.stat(path).st_size <= 256*1024:
         media = MediaFileUpload(path, mimetype=file_mimeType)
         new_file = service.files().create(body=file_metadata,
                                       media_body=media,
