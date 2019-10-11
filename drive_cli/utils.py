@@ -169,6 +169,7 @@ def push_needed(drive, item_path):
         drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) + float(19800.00)
     local_time = os.path.getmtime(item_path) - float(19801.00)
     data = drive_data()
+    # print("#####",data,item_path,data[item_path],data[item_path]['time'],local_time)
     sync_time = data[item_path]['time']
     if sync_time < local_time:
         if sync_time < drive_time:
@@ -375,7 +376,7 @@ def upload_file(name, path, pid):
                                           media_body=media,
                                           fields='id').execute()
     else:
-        CHUNK_SIZE_MB = int(os.getenv("CHUNK_SIZE_MB") or 1 # MB. You may want to increase the size to a higher speed if the network restrictions allow
+        CHUNK_SIZE_MB = int(os.getenv("CHUNK_SIZE_MB") or 1 )#or 1 # MB. You may want to increase the size to a higher speed if the network restrictions allow
         media = MediaFileUpload(
             path, mimetype=file_mimeType,
             chunksize=(1024 * 1024 * CHUNK_SIZE_MB) , resumable=True)
