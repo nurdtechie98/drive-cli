@@ -437,7 +437,7 @@ def pull_content(cwd, fid):
         else:
             if(not os.path.exists(dir_name)):
                 click.secho("creating: " + dir_name)
-                os.mkdir(dir_name)
+                os.makedirs(dir_name)
                 data = drive_data()
                 data[dir_name] = {'id': item['id'], 'time': time.time()}
                 data = drive_data(data)
