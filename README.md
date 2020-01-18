@@ -1,5 +1,5 @@
 <p align="center">
- <img src="./drive-cli.png">
+ <img height="200px" src="./drive-cli.png">
 </p>
 
 <h1 align="center">Drive Cli</h1>
