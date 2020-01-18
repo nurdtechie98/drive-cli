@@ -2,6 +2,9 @@
  <img src="./drive_cli.png">
 </p>
 
+<div align="center">
+
+
 <h4>Get the ability to access <strong>Google Drive</strong> without leaving your terminal.</h4>
 
 </div>
