@@ -1,16 +1,12 @@
 <p align="center">
   <a href="" rel="noopener">
- <img height=200px src="https://i.imgur.com/QEcBZSh.png" alt="Briefly-logo"></a>
+ <img height=200px src="./drive-cli.png" alt="Briefly-logo"></a>
 </p>
 
 <h1 align="center">Drive Cli</h1>
 
 <div align="center">
 
-[![PyPI version](https://badge.fury.io/py/drive-cli.svg)](https://badge.fury.io/py/drive-cli)
-[![Python version](https://img.shields.io/badge/python-3.4+-blue.svg)](https://www.python.org/download/releases/3.4.0/)
-[![Build Status](https://travis-ci.org/nurdtechie98/drive-cli.svg?branch=dev)](https://travis-ci.org/nurdtechie98/drive-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <h4>Get the ability to access <strong>Google Drive</strong> without leaving your terminal.</h4>
 
