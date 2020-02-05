@@ -557,7 +557,7 @@ def file_info(fid):
     creds = store.get()
     service = build('drive', 'v2', http=creds.authorize(Http()))
     file_id = utils.get_fid(fid)
-    t = PrettyTable(["Genreal Info", "", " "])
+    t = PrettyTable(["General Info", "", " "])
     t.align = "l"
     f = service.files().get(fileId=file_id).execute()
     t.add_row(["", "Name", f["title"]])
