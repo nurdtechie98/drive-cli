@@ -38,12 +38,12 @@ def login(remote=False, json_file=None):
         flow = client.flow_from_clientsecrets(str(client_id), SCOPES)
         creds = tools.run_flow(flow, store, flags)
         store.put(creds)
-        click.secho(
-            "********************** welcome to **********************", bold=True, fg='red')
-        result = pyfiglet.figlet_format("Drive - CLI", font="slant")
-        click.secho(result, fg='yellow')
-        click.secho(
-            "********************************************************", bold=True, fg='red')
+    click.secho(
+        "********************** welcome to **********************", bold=True, fg='red')
+    result = pyfiglet.figlet_format("Drive - CLI", font="slant")
+    click.secho(result, fg='yellow')
+    click.secho(
+        "********************************************************", bold=True, fg='red')
 
 
 def loggin():
