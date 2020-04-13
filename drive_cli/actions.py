@@ -3,17 +3,14 @@ import os
 import sys
 import click
 from pick import Picker
-from httplib2 import Http
-from oauth2client import file
 from prettytable import PrettyTable
-from googleapiclient.discovery import build
 from prettytable import MSWORD_FRIENDLY
 from mimetypes import MimeTypes
-
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dirpath)
 mime = MimeTypes()
+drive = utils.Drive()
 
 
 @click.command('view-files', short_help='filter search files and file ID for files user has access to')
@@ -26,10 +23,6 @@ def view_file(name, types, pid):
     """
     cwd = os.getcwd()
     flags = {"--name": [None], "--types": [None], "--pid": [None]}
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
     query = ""
     if name:
@@ -49,7 +42,7 @@ def view_file(name, types, pid):
                          "gif",
                          "bmp",
                          "txt",
-                         "docx",
+                         "doc",
                          "js",
                          "swf",
                          "mp3",
@@ -98,16 +91,16 @@ def view_file(name, types, pid):
     if pid:
         parent = click.prompt('enter the fid of parent or  sharing link')
         flags["--pid"] = [parent]
-        fid = utils.get_fid(parent)
+        fid = drive.get_fid(parent)
         if (name != False) or (types != False):
             query += " and "
         query += "'" + fid + "' in parents"
     i = 1
     while True:
-        response = service.files().list(q=query,
-                                        spaces='drive',
-                                        fields='nextPageToken, files(id, name,mimeType,modifiedTime)',
-                                        pageToken=page_token).execute()
+        response = drive.service.files().list(q=query,
+                                              spaces='drive',
+                                              fields='nextPageToken, files(id, name,mimeType,modifiedTime)',
+                                              pageToken=page_token).execute()
 
         templist = [response.get('files', [])[j:j + 25] for j in range(0, len(
             response.get('files', [])), 25)]
@@ -123,50 +116,52 @@ def view_file(name, types, pid):
         page_token = response.get('nextPageToken', None)
         if page_token is None:
             break
-    utils.save_history([flags, "", cwd])
+    drive.save_history([flags, "", cwd])
 
 
-@click.command('clone', short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
+@click.command('clone',
+               short_help='download any file using sharing link or file ID it will be automatically tracked henceforth')
 @click.argument('payload')
 def download(payload):
     '''
     clone: download a file/folder  using either the sharing link or using the file ID  for the file
     '''
     cwd = os.getcwd()
-    utils.save_history([{}, payload, cwd])
+    drive.save_history([{}, payload, cwd])
     if payload != None:
-        fid = utils.get_fid(payload)
+        fid = drive.get_fid(payload)
     else:
         click.secho("argument error", fg='red')
         with click.Context(download) as ctx:
             click.echo(download.get_help(ctx))
         sys.exit(0)
-    clone = utils.get_file(fid)
+    clone = drive.get_file(fid)
     click.secho("cloning into '" + clone['name'] + "' .....", fg='magenta')
     if clone['mimeType'] == 'application/vnd.google-apps.folder':
         new_dir = os.path.join(cwd, clone['name'])
-        utils.create_new(new_dir, fid)
-        utils.pull_content(new_dir, fid)
+        drive.create_new(new_dir, fid)
+        drive.pull_content(new_dir, fid)
     else:
-        utils.file_download(clone, cwd)
+        drive.file_download(clone, cwd)
     click.secho("cloning of " + clone['name'] + ' completed', fg='green')
 
 
 @click.command('add_remote', short_help='upload any existing file to drive')
 @click.option('--file', help='specify the partcular file to uploaded else entire directory is uploaded')
-@click.option('--pid', help='specify particular folder id/sharing_link of the folder under which remote must must be added')
+@click.option('--pid',
+              help='specify particular folder id/sharing_link of the folder under which remote must must be added')
 def create_remote(file, pid):
     """
     add_remote: create remote equivalent for existing file/folder in local device
     """
     cwd = os.getcwd()
-    utils.save_history([{"--file": [file], "--pid":[pid]}, "", cwd])
+    drive.save_history([{"--file": [file], "--pid": [pid]}, "", cwd])
     if pid == None:
         pid = 'root'
     if file != None:
         file_path = os.path.join(cwd, file)
         if os.path.isfile(file_path):
-            utils.upload_file(file, file_path, pid)
+            drive.upload_file(file, file_path, pid)
         else:
             click.secho("No such file exist: " + file_path, fg="red")
             with click.Context(create_remote) as ctx:
@@ -174,10 +169,10 @@ def create_remote(file, pid):
     else:
         sep = os.sep
         dir_cd, name = sep.join(cwd.split(sep)[:-1]), cwd.split(sep)[-1]
-        child_cwd, child_id = utils.create_dir(dir_cd, pid, name)
-        utils.push_content(child_cwd, child_id)
+        child_cwd, child_id = drive.create_dir(dir_cd, pid, name)
+        drive.push_content(child_cwd, child_id)
     if pid != None:
-        parent_file = utils.get_file(pid)
+        parent_file = drive.get_file(pid)
         parent_name = parent_file['name']
         click.secho("content added under directory " +
                     parent_name, fg='magenta')
@@ -185,33 +180,35 @@ def create_remote(file, pid):
 
 @click.command('rm', short_help='delete a particular file in drive')
 @click.option('--file', help='specify the partcular file to deleted else entire directory is deleted')
-@click.option('--id', help='delete untracked file directly using id or sharing link, can be used even for unlinked files')
+@click.option('--id',
+              help='delete untracked file directly using id or sharing link, can be used even for unlinked files')
 def delete(file, id):
     '''
     rm: delete a particular file/folder from the directory in the remote drive
     '''
     cwd = os.getcwd()
-    utils.save_history([{"--file": [file], "--id":[id]}, "", cwd])
+    drive.save_history([{"--file": [file], "--id": [id]}, "", cwd])
     if id == None:
         if file != None:
             file_path = os.path.join(cwd, file)
             if os.path.isfile(file_path):
-                local_dir = utils.get_child(cwd)
+                local_dir = drive.get_child(cwd)
                 fid = local_dir[file]
+                drive.delete_file(fid)
             else:
                 click.secho("No such file exist: " + file_path, fg="red")
                 with click.Context(delete) as ctx:
                     click.echo(delete.get_help(ctx))
             cwd = file_path
         else:
-            data = utils.drive_data()
+            data = drive.drive_data()
             fid = data[cwd]
             data.pop(cwd, None)
-            utils.drive_data(data)
-        utils.delete_file(fid)
+            drive.drive_data(data)
+            drive.delete_file(fid)
     else:
-        fid = utils.get_fid(id)
-        utils.delete_file(fid)
+        fid = drive.get_fid(id)
+        drive.delete_file(fid)
 
 
 @click.command('ls', short_help='list out all the files present in this directory in the drive for tracked directories')
@@ -220,12 +217,8 @@ def list_out():
     ls: Print files belonging to a folder in the drive folder of the current directory
     """
     cwd = os.getcwd()
-    utils.save_history([{}, "", cwd])
-    data = utils.drive_data()
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
+    drive.save_history([{}, "", cwd])
+    data = drive.drive_data()
     page_token = None
     if cwd not in data.keys():
         click.secho(
@@ -235,11 +228,11 @@ def list_out():
     click.secho('listing down files in drive ....', fg='magenta')
     t = PrettyTable(['Name', 'File ID', 'Type'])
     while True:
-        children = service.files().list(q=query,
-                                        spaces='drive',
-                                        fields='nextPageToken, files(id,mimeType,name)',
-                                        pageToken=page_token
-                                        ).execute()
+        children = drive.service.files().list(q=query,
+                                              spaces='drive',
+                                              fields='nextPageToken, files(id,mimeType,name)',
+                                              pageToken=page_token
+                                              ).execute()
         for child in children.get('files', []):
             t.add_row([child.get('name')[:25], child.get(
                 'id'), child.get('mimeType')])
@@ -253,14 +246,9 @@ def list_out():
 @click.argument('link')
 def view(link):
     cwd = os.getcwd()
-    utils.save_history([{}, link, cwd])
-    fid = utils.get_fid(link)
-    try:
-        utils.concat(fid)
-    except:
-        error_message = str(sys.exc_info()[1])
-        click.secho(error_message, fg='red')
-
+    drive.save_history([{}, link, cwd])
+    fid = drive.get_fid(link)
+    drive.concat(fid)
 
 
 @click.command('status', short_help='list changes committed since last sync')
@@ -269,30 +257,30 @@ def status():
     status: get a change log of files changed since you had the last sync(push/pull/clone)
     '''
     cwd = os.getcwd()
-    utils.save_history([{}, "", cwd])
-    data = utils.drive_data()
+    drive.save_history([{}, "", cwd])
+    data = drive.drive_data()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
         sys.exit(0)
     sync_time = data[cwd]['time']
-    utils.list_status(cwd, sync_time)
+    drive.list_status(cwd, sync_time)
 
 
 @click.command('pull', short_help='get latest updates from online drive of the file')
 def pull():
     cwd = os.getcwd()
-    utils.save_history([{}, "", cwd])
-    data = utils.drive_data()
+    drive.save_history([{}, "", cwd])
+    data = drive.drive_data()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
-    current_root = utils.get_file(fid)
+    current_root = drive.get_file(fid)
     click.secho("checking for changes in '" +
                 current_root['name'] + "' ....", fg='magenta')
-    utils.pull_content(cwd, fid)
+    drive.pull_content(cwd, fid)
     click.secho(current_root['name'] +
                 " is up to date with drive", fg='yellow')
 
@@ -303,17 +291,17 @@ def push():
     push the latest changes from your local folder that has been added/cloned to google drive.
     '''
     cwd = os.getcwd()
-    utils.save_history([{}, "", cwd])
-    data = utils.drive_data()
+    drive.save_history([{}, "", cwd])
+    data = drive.drive_data()
     if cwd not in data.keys():
         click.secho(
             "following directory has not been tracked: \nuse drive add_remote or drive clone ", fg='red')
         sys.exit(0)
     fid = data[cwd]['id']
-    current_root = utils.get_file(fid)
+    current_root = drive.get_file(fid)
     click.secho("checking for changes in '" +
                 current_root['name'] + "' ....", fg='magenta')
-    utils.push_content(cwd, fid)
+    drive.push_content(cwd, fid)
     click.secho("Working directory is clean", fg="green")
 
 
@@ -346,13 +334,9 @@ def share(fid, role, type, message):
     cwd = os.getcwd()
     flags = {"--role": [role], "--type": [type], "--message": [message]}
     click.secho("updating share setting.....", fg='magenta')
-    file_id = utils.get_fid(fid)
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v3', http=creds.authorize(Http()))
-    if(type == "anyone"):
-        if(role == "owner"):
+    file_id = drive.get_fid(fid)
+    if (type == "anyone"):
+        if (role == "owner"):
             transfer_ownership = True
         else:
             transfer_ownership = False
@@ -362,11 +346,11 @@ def share(fid, role, type, message):
             "allowFileDiscovery": True
         }
         try:
-            response = service.permissions().create(body=request,
-                                                    fileId=file_id,
-                                                    transferOwnership=transfer_ownership,
-                                                    fields='id').execute()
-            if(list(response.keys())[0] == "error"):
+            response = drive.service.permissions().create(body=request,
+                                                          fileId=file_id,
+                                                          transferOwnership=transfer_ownership,
+                                                          fields='id').execute()
+            if (list(response.keys())[0] == "error"):
                 click.secho(response["error"]["message"], fg='red')
             else:
                 share_link = "https://drive.google.com/open?id=" + file_id
@@ -377,39 +361,36 @@ def share(fid, role, type, message):
             click.secho(error_message, fg='red')
 
     else:
-        if(type == "user"):
-            email_id = click.prompt("Enter email address of user ")
-            email_id = email_id.split(" ")
+        if (type == "user"):
+            email_id = click.prompt("Enetr email address of user ")
         else:
-            email_id = click.prompt("Enter email address of a google group ")
-            email_id = email_id.split(" ")
+            email_id = click.prompt("Enetr email address of a google group ")
         flags["Email ID"] = email_id
-        if(role == "owner"):
+        if (role == "owner"):
             transfer_ownership = True
         else:
             transfer_ownership = False
-        for email in email_id:
-            request = {
-                "role": role,
-                "type": type,
-                "emailAddress": email
-            }
-            try:
-                response = service.permissions().create(body=request,
-                                                        fileId=file_id,
-                                                        emailMessage=message,
-                                                        sendNotificationEmail=True,
-                                                        transferOwnership=transfer_ownership,
-                                                        fields='id').execute()
-                if(list(response.keys())[0] == "error"):
-                    click.secho(response["error"]["message"], fg='red')
-                else:
-                    click.secho("successfully shared to " + email, fg='green')
-            except:
-                error_message = str(sys.exc_info()[1])
-                error_message = error_message.split('\"')[1]
-                click.secho(error_message, fg='red')
-    utils.save_history([flags, fid, cwd])
+        request = {
+            "role": role,
+            "type": type,
+            "emailAddress": email_id
+        }
+        try:
+            response = drive.service.permissions().create(body=request,
+                                                          fileId=file_id,
+                                                          emailMessage=message,
+                                                          sendNotificationEmail=True,
+                                                          transferOwnership=transfer_ownership,
+                                                          fields='id').execute()
+            if (list(response.keys())[0] == "error"):
+                click.secho(response["error"]["message"], fg='red')
+            else:
+                click.secho("successfully share", fg='green')
+        except:
+            error_message = str(sys.exc_info()[1])
+            error_message = error_message.split('\"')[1]
+            click.secho(error_message, fg='red')
+    drive.save_history([flags, fid, cwd])
 
 
 @click.command('history', short_help="view history")
@@ -419,14 +400,14 @@ def history(date, clear):
     if clear:
         click.confirm('Do you want to continue?', abort=True)
         click.secho("deleting.....", fg='magenta')
-        utils.clear_history()
+        drive.clear_history()
         click.secho("successfully deleted", fg='green')
         cwd = os.getcwd()
-        utils.save_history([{"--date": [date], "--clear":["True"]}, "", cwd])
+        drive.save_history([{"--date": [date], "--clear": ["True"]}, "", cwd])
     else:
         cwd = os.getcwd()
-        utils.save_history([{"--date": [date], "--clear":[None]}, "", cwd])
-        History = utils.get_history()
+        drive.save_history([{"--date": [date], "--clear": [None]}, "", cwd])
+        History = drive.get_history()
         if date != None:
             if date in History:
                 history = History[date]
@@ -434,15 +415,15 @@ def history(date, clear):
                     click.secho(date + "  " + i, fg='yellow', bold=True)
                     click.secho("working directory : " + history[i]["cwd"], bold=True)
                     click.secho("command : " + history[i]["command"])
-                    if(history[i]["arg"] != ""):
+                    if (history[i]["arg"] != ""):
                         click.secho("argument : " + history[i]["arg"])
-                    if(len(history[i]["flags"]) != 0):
+                    if (len(history[i]["flags"]) != 0):
                         flag_val = ""
                         for j in history[i]["flags"]:
-                            if(history[i]["flags"][j][0] != None):
+                            if (history[i]["flags"][j][0] != None):
                                 val = ", ".join(history[i]["flags"][j])
                                 flag_val = flag_val + "\t" + j + " : " + val + "\n"
-                        if(flag_val != ""):
+                        if (flag_val != ""):
                             click.secho("flags : ", bold=True)
                             click.secho(flag_val)
                     click.secho("\n")
@@ -458,41 +439,39 @@ def history(date, clear):
                         click.secho(date + "  " + i, fg='yellow', bold=True)
                         click.secho("working directory : " + history[i]["cwd"], bold=True)
                         click.secho("command : " + history[i]["command"])
-                        if(history[i]["arg"] != ""):
+                        if (history[i]["arg"] != ""):
                             click.secho("argument : " + history[i]["arg"])
-                        if(len(history[i]["flags"]) != 0):
+                        if (len(history[i]["flags"]) != 0):
                             flag_val = ""
                             for j in history[i]["flags"]:
-                                if(history[i]["flags"][j][0] != None):
+                                if (history[i]["flags"][j][0] != None):
                                     val = ", ".join(history[i]["flags"][j])
                                     flag_val = flag_val + "\t" + j + " : " + val + "\n"
-                            if(flag_val != ""):
+                            if (flag_val != ""):
                                 click.secho("flags : ", bold=True)
                                 click.secho(flag_val)
                         click.secho("\n")
 
 
-@click.command('log', short_help="It allows users to see who made edits and to revert to earlier versions of the same file.")
+@click.command('log',
+               short_help="It allows users to see who made edits and to revert to earlier versions of the same file.")
 @click.argument('fid')
 @click.option('--get', type=str, help="provide revision id to get more info ")
 @click.option('--delete', type=str, help="delete a particular revision")
-@click.option('--save', type=str, help="To keep revision forever, even if it is no longer the head revision. If not set, the revision will be automatically purged 30 days after newer content is uploaded. ")
+@click.option('--save', type=str,
+              help="To keep revision forever, even if it is no longer the head revision. If not set, the revision will be automatically purged 30 days after newer content is uploaded. ")
 def get_revision(fid, get, delete, save):
     '''
     It allows users to see who made edits and to revert to earlier versions of the same file.
     '''
     cwd = os.getcwd()
     flags = {"--get": [get], "--delete": [delete], "--save": [save]}
-    utils.save_history([flags, fid, cwd])
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    if(get != None):
+    drive.save_history([flags, fid, cwd])
+    if (get != None):
         click.secho("fetching....", fg='magenta')
-        service = build('drive', 'v2', http=creds.authorize(Http()))
-        file_id = utils.get_fid(fid)
-        response = service.revisions().get(fileId=file_id,
-                                           revisionId=get).execute()
+        file_id = drive.get_fid(fid)
+        response = drive.service.revisions().get(fileId=file_id,
+                                                 revisionId=get).execute()
         modified_time = response["modifiedDate"].split("T")
         user = response["lastModifyingUser"]
         click.secho(click.style("File : ", fg='yellow', bold=True) +
@@ -507,13 +486,13 @@ def get_revision(fid, get, delete, save):
                                 bold=True) + response["fileSize"] + "bytes")
         click.secho(click.style("eTag : ", fg='yellow',
                                 bold=True) + response["etag"])
-        if(response["published"]):
+        if (response["published"]):
             click.secho(click.style("Published : ",
                                     fg='yellow', bold=True) + "Yes")
         else:
             click.secho(click.style("Published : ",
                                     fg='yellow', bold=True) + "No")
-        if(response["pinned"]):
+        if (response["pinned"]):
             click.secho(click.style(
                 "Pinned : ", fg='yellow', bold=True) + "Yes")
         else:
@@ -522,30 +501,27 @@ def get_revision(fid, get, delete, save):
         click.secho(click.style("Permission Id : ", fg='yellow', bold=True) +
                     user["permissionId"])
 
-    if(delete != None):
+    if (delete != None):
         click.secho("deleting.....", fg='magenta')
-        service = build('drive', 'v3', http=creds.authorize(Http()))
-        file_id = utils.get_fid(fid)
-        response = service.revisions().delete(fileId=file_id,
-                                              revisionId=delete).execute()
+        file_id = drive.get_fid(fid)
+        response = drive.service.revisions().delete(fileId=file_id,
+                                                    revisionId=delete).execute()
         click.secho("revision" + delete + "successfully deleted", fg='green')
 
-    if(save != None):
+    if (save != None):
         click.secho("saving " + save +
                     " revision premanently....", fg='magenta')
-        service = build('drive', 'v3', http=creds.authorize(Http()))
-        file_id = utils.get_fid(fid)
-        response = service.revisions().update(body={"keepForever": True},
-                                              fileId=file_id,
-                                              revisionId=save).execute()
+        file_id = drive.get_fid(fid)
+        response = drive.service.revisions().update(body={"keepForever": True},
+                                                    fileId=file_id,
+                                                    revisionId=save).execute()
         click.secho("svaed successfully", fg='green')
 
-    if(delete == None and get == None and save == None):
-        file_id = utils.get_fid(fid)
-        file_name = utils.get_file(fid)["name"]
+    if (delete == None and get == None and save == None):
+        file_id = drive.get_fid(fid)
+        file_name = drive.get_file(fid)["name"]
         click.secho("fetching revision detail of " + file_name + ".....", fg='magenta')
-        service = build('drive', 'v3', http=creds.authorize(Http()))
-        response = service.revisions().list(fileId=file_id).execute()
+        response = drive.service.revisions().list(fileId=file_id).execute()
         revisions = response["revisions"]
         for r in reversed(revisions):
             modified_time = r["modifiedTime"].split("T")
@@ -559,15 +535,11 @@ def get_revision(fid, get, delete, save):
 def file_info(fid):
     click.secho("fetching....", fg='magenta')
     cwd = os.getcwd()
-    utils.save_history([{}, fid, cwd])
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    service = build('drive', 'v2', http=creds.authorize(Http()))
-    file_id = utils.get_fid(fid)
+    drive.save_history([{}, fid, cwd])
+    file_id = drive.get_fid(fid)
     t = PrettyTable(["Genreal Info", "", " "])
     t.align = "l"
-    f = service.files().get(fileId=file_id).execute()
+    f = drive.service.files().get(fileId=file_id).execute()
     t.add_row(["", "Name", f["title"]])
     t.add_row(["", "ID", f["id"]])
     t.add_row(["", "Mime Type", f["mimeType"]])
@@ -579,18 +551,18 @@ def file_info(fid):
     t.add_row(["", "created date", date + " " + time])
     t.add_row(["", "can edit", str(f["capabilities"]["canEdit"]) + "\n"])
     try:
-        parents = service.parents().list(fileId=file_id).execute()
+        parents = drive.service.parents().list(fileId=file_id).execute()
         if len(parents["items"]) != 0:
             t.add_row(["Parent Info", "", " "])
             for parent in parents["items"]:
-                parent_name = utils.get_file(parent["id"])["name"]
+                parent_name = drive.get_file(parent["id"])["name"]
                 t.add_row(["", "Name", parent_name])
                 t.add_row(["", "ID", parent["id"]])
                 t.add_row(["", "Link", parent["parentLink"] + "\n"])
     except:
         pass
     try:
-        permissions = service.permissions().list(fileId=file_id).execute()
+        permissions = drive.service.permissions().list(fileId=file_id).execute()
         t.add_row(["Permissions", "", " "])
         per_num = 0
         for permission in permissions["items"]:
@@ -608,7 +580,7 @@ def file_info(fid):
     except:
         pass
     try:
-        revisions = service.revisions().list(fileId=file_id).execute()
+        revisions = drive.service.revisions().list(fileId=file_id).execute()
         t.add_row(["Revision", "", " "])
         rev_num = 0
         for rev in revisions["items"]:
@@ -633,7 +605,7 @@ def file_info(fid):
 def drive_ignore(unttrack_file, l):
     cwd = os.getcwd()
     drive_ignore_path = os.path.join(cwd, '.driveignore')
-    if(len(unttrack_file) != 0):
+    if (len(unttrack_file) != 0):
         try:
             file = open(drive_ignore_path, 'r')
             files = file.readlines()
@@ -653,7 +625,7 @@ def drive_ignore(unttrack_file, l):
 
     if l:
         click.secho("listing untracked files....", fg="magenta")
-        utils.save_history([{"-l": ["True"]}, " ", cwd])
+        drive.save_history([{"-l": ["True"]}, " ", cwd])
         if os.path.isfile(drive_ignore_path):
             file = open(drive_ignore_path, 'r')
             untracked_files = file.read()
@@ -663,4 +635,4 @@ def drive_ignore(unttrack_file, l):
             click.secho(".driveignore file doesn't exist in " + cwd, fg="red")
             sys.exit(0)
     else:
-        utils.save_history([{"-l": [None]}, " ", cwd])
+        drive.save_history([{"-l": [None]}, " ", cwd])
