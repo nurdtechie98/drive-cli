@@ -3,6 +3,7 @@ import os
 import click
 import pyfiglet
 import requests
+import sys
 from oauth2client import file, client, tools
 from pathlib import Path
 
@@ -30,15 +31,19 @@ def login(remote=False, json_file=None):
         click.secho("Using Oauth JSON file {}".format(json_file))
     token = config_path.joinpath('token.json')
     store = file.Storage(str(token))
-    if token.is_file():
-        creds = store.get()
-    else:
-        creds = None
+    creds = store.get() if token.is_file() else None
     if not creds or creds.invalid:
         client_id = json_file or config_path.joinpath('oauth.json')
-        flow = client.flow_from_clientsecrets(str(client_id), SCOPES)
-        creds = tools.run_flow(flow, store, flags)
-        store.put(creds)
+        if client_id.is_file():
+            store = file.Storage(str(token))
+            flow = client.flow_from_clientsecrets(str(client_id), SCOPES)
+            creds = tools.run_flow(flow, store, flags)
+            store.put(creds)
+        else:
+            click.secho("Unable to find your oauth json file. Please re-run, specifying the JSON file with"
+                        "'drive login --json-file /path/to/your/file.json'", fg="red")
+            sys.exit(1)
+
     click.secho(
         "********************** welcome to **********************", bold=True, fg='red')
     result = pyfiglet.figlet_format("Drive - CLI", font="slant")
@@ -61,15 +66,18 @@ def logout():
     drive = utils.Drive()
     cwd = os.getcwd()
     drive.save_history([{}, "", cwd])
-    token = os.path.join(dirpath, 'token.json')
-    store = file.Storage(token)
-    creds = store.get()
-    if creds:
-        requests.post('https://accounts.google.com/o/oauth2/revoke',
-                      params={'token': creds.access_token},
-                      headers={'content-type': 'application/x-www-form-urlencoded'})
-
-    os.remove(token)
-    click.secho("Logged Out successfully\nUse:")
-    click.secho("drive login", bold=True, fg='green')
-    click.secho("to login again")
+    token = config_path.joinpath('token.json')
+    if not token.is_file():
+        click.secho("You are not logged in", fg="red")
+        sys.exit(1)
+    else:
+        store = file.Storage(token)
+        creds = store.get()
+        if creds:
+            requests.post('https://accounts.google.com/o/oauth2/revoke',
+                          params={'token': creds.access_token},
+                          headers={'content-type': 'application/x-www-form-urlencoded'})
+        os.remove(str(token))
+        click.secho("Logged Out successfully\nUse:")
+        click.secho("drive login", bold=True, fg='green')
+        click.secho("to login again")
