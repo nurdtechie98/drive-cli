@@ -11,7 +11,8 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 config_path = Path.home().joinpath(".config", "drive-cli")
 
 @click.command("login",
-    help='login to your google account and authenticate the service')
+    help='Log in to your google account and authenticate the service. See README for more detailed instructions '
+         'regarding authorization.')
 @click.option("--remote",
     is_flag=True,
     default=False,
