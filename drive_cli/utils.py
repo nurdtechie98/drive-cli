@@ -18,6 +18,19 @@ from oauth2client import file
 dirpath = os.path.dirname(os.path.realpath(__file__))
 mime = MimeTypes()
 
+class UnauthorizedService:
+    unauth_msg = ("This application has not been authorized. Please run 'drive login', "
+                  "use 'drive login --help' for further assistance.")
+
+    def default(self):
+        click.secho(self.unauth_msg, fg="red")
+        sys.exit(1)
+
+    def __init__(self):
+        for item in {'about', 'changes', 'channels', 'comments', 'drives', 'files', 'new_batch_http_request',
+                     'permissions', 'replies', 'revisions', 'teamdrives'}:
+            setattr(self, item, self.default)
+
 
 class Drive:
 
