@@ -68,6 +68,30 @@
 ------------------------------------------
 ### Usage
 
+#### Login
+To utilize drive-cli, you will need to create and download your credentials from the 
+[Google Developer Console](https://console.developers.google.com/apis/credentials).  
+1. Click "+ Create Credentials" in the top bar
+2. Select "OAuth client ID"
+3. Select the "Other" application type, and name this something memorable (like "drive-cli")
+4. You can then click the ⬇️ icon to download the OAuth JSON file. Remember where you save this.
+5. You can now use the drive-cli to login.  
+```shell script
+$ drive login --json-file ~/Downloads/client_secret.json
+
+********************** welcome to **********************
+    ____       _                        ________    ____
+   / __ \_____(_)   _____              / ____/ /   /  _/
+  / / / / ___/ / | / / _ \   ______   / /   / /    / /  
+ / /_/ / /  / /| |/ /  __/  /_____/  / /___/ /____/ /   
+/_____/_/  /_/ |___/\___/            \____/_____/___/   
+                                                        
+
+********************************************************
+```  
+Once logged in, you are able to use any of the calls. You must log in before you can do anything else.
+
+
 #### Clone
 Download a file or folder present in drive using its file id or its sharing link. In case it is a folder it gets tracked.
 

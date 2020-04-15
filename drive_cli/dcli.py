@@ -9,11 +9,10 @@ sys.path.append(dirpath)
 
 
 @click.group()
-@click.option('--remote', is_flag=True, default=False, help='remote login in case browser is on a different machine')
-def cli(remote):
-    auth.login(remote)
+def cli(*args):
+    pass
 
-cli.add_command(auth.loggin)
+cli.add_command(auth.login)
 
 cli.add_command(actions.view_file)
 
