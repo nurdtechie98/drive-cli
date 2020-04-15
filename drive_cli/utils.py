@@ -40,13 +40,12 @@ class Drive:
         self.hist_path = self.config_path.joinpath(".history")
         self.dclipath = self.config_path.joinpath(".dclipath")
         token = self.config_path.joinpath('token.json')
-        if not token.is_file():
-            print("This application has not been authorized. Please run 'drive login', "
-                  "use 'drive login --help' for further assistance.")
-            sys.exit(1)
-        store = file.Storage(str(token))
-        creds = store.get()
-        self.service = build('drive', 'v3', http=creds.authorize(Http()))
+        if token.is_file():
+            store = file.Storage(str(token))
+            creds = store.get()
+            self.service = build('drive', 'v3', http=creds.authorize(Http()))
+        else:
+            self.service = UnauthorizedService()
 
     def get_history(self):
         if not self.hist_path.is_file():
