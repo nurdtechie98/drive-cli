@@ -38,9 +38,7 @@ class Drive:
         self.config_path = Path.home().joinpath(".config", "drive-cli")
         self.config_path.mkdir(parents=True, exist_ok=True)
         self.hist_path = self.config_path.joinpath(".history")
-        self.hist_path.mkdir(exist_ok=True)
         self.dclipath = self.config_path.joinpath(".dclipath")
-        self.dclipath.mkdir(exist_ok=True)
         token = self.config_path.joinpath('token.json')
         if not token.is_file():
             print("This application has not been authorized. Please run 'drive login', "
@@ -51,7 +49,7 @@ class Drive:
         self.service = build('drive', 'v3', http=creds.authorize(Http()))
 
     def get_history(self):
-        if not self.hist_path.exists():
+        if not self.hist_path.is_file():
             with self.hist_path.open('w')as outfile:
                 history = {}
                 json.dump(history, outfile)
