@@ -175,7 +175,7 @@ def push_needed(drive, item_path):
             input = ''
             while(input != 's' and input != 'o'):
                 input = click.prompt("Conflict: both local and online copy of " +
-                                     dir_name + " has been modified\npress o to OVERWRITE s to SKIP")
+                                     item_path + " has been modified\npress o to OVERWRITE s to SKIP")
             if(input == 'o'):
                 return True
         else:
