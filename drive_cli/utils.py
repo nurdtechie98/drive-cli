@@ -430,6 +430,7 @@ def pull_content(cwd, fid):
         if page_token is None:
             break
     for item in lis:
+        item['name'] = item['name'].replace("/","-")
         dir_name = os.path.join(cwd, item['name'])
         if(item['mimeType'] != 'application/vnd.google-apps.folder'):
             if((not os.path.exists(dir_name)) or write_needed(dir_name, item)):
