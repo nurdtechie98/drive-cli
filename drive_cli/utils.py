@@ -79,10 +79,10 @@ def drive_data(*argv):
     return data
 
 
-def get_request(service, fid, mimeType):
+def get_request(service, fid, mimeType, filename):
     if(re.match('^application/vnd\.google-apps\..+', mimeType)):
         if(mimeType == 'application/vnd.google-apps.document'):
-            mimeTypes = {extension: mime.guess_type("placeholder_filename." + extension)[0] for extension
+            mimeTypes = {extension: mime.guess_type(filename + "." + extension)[0] for extension
                          in ("pdf",
                              "txt",
                              "doc",
@@ -90,8 +90,9 @@ def get_request(service, fid, mimeType):
                              "html",
                              "rtf",
                              "odt")}
+            docType = "Google Docs"
         elif(mimeType == 'application/vnd.google-apps.spreadsheet'):
-            mimeTypes = {extension: mime.guess_type("placeholder_filename." + extension)[0] for extension
+            mimeTypes = {extension: mime.guess_type(filename + "." + extension)[0] for extension
                          in ("pdf",
                              "xlsx",
                              "zip",
@@ -99,15 +100,17 @@ def get_request(service, fid, mimeType):
                              "ods",
                              "csv",
                              "tsv")}
+            docType = "Google Sheets"
         elif(mimeType == 'application/vnd.google-apps.presentation'):
-            mimeTypes = {extension: mime.guess_type("paceholder_filename." + extension)[0] for extension
+            mimeTypes = {extension: mime.guess_type(filename + "." + extension)[0] for extension
                          in ("pdf",
                              "zip",
                              "html",
                              "pptx",
                              "txt")}
+            docType = "Google Slides"
         else:
-            mimeTypes = {extension: mime.guess_type("paceholder_filename." + extension)[0] for extension
+            mimeTypes = {extension: mime.guess_type(filename + "." + extension)[0] for extension
                          in ("ods",
                              "csv",
                              "pdf",
@@ -126,9 +129,10 @@ def get_request(service, fid, mimeType):
                              "cab",
                              "html",
                              "htm")}
+            docType = "Unknown"
             mimeTypes.update(
                 {'tmpl': 'text/plain', 'php': 'application/x-httpd-php', 'arj': 'application/arj'})
-        promptMessage = 'Choose type to export to \n(ENTER to select, s to stop):'
+        promptMessage = 'Choose the export type for the ' + docType + ' document: ' + filename + ' \n(ENTER to select, s to stop):'
         title = promptMessage
         options = [x for x in mimeTypes.keys()]
         picker = Picker(options, title, indicator='=>', default_index=0)
@@ -314,7 +318,7 @@ def file_download(item, cwd, clone=False):
     fname = item['name']
     fh = io.BytesIO()
     click.echo("Preparing: " + click.style(fname, fg='red') + " for download")
-    request, ext = get_request(service, fid, item['mimeType'])
+    request, ext = get_request(service, fid, item['mimeType'], item["name"])
     file_path = (os.path.join(cwd, fname) + ext)
     if(not clone and (os.path.exists(file_path)) and (not write_needed(file_path, item))):
         return
@@ -342,7 +346,7 @@ def concat(fid):
     service = build('drive', 'v3', http=creds.authorize(Http()))
     fh = io.BytesIO()
     item = get_file(fid)
-    request, ext = get_request(service, fid, item['mimeType'])
+    request, ext = get_request(service, fid, item['mimeType'], item["name"])
     downloader = MediaIoBaseDownload(fh, request)
     done = False
     while done is False:
