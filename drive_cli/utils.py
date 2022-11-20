@@ -170,12 +170,14 @@ def push_needed(drive, item_path):
     local_time = os.path.getmtime(item_path) - float(19801.00)
     data = drive_data()
     sync_time = data[item_path]['time']
+    if (type(sync_time) is not float):
+        sync_time = sync_time['time']
     if sync_time < local_time:
         if sync_time < drive_time:
             input = ''
             while(input != 's' and input != 'o'):
                 input = click.prompt("Conflict: both local and online copy of " +
-                                     dir_name + " has been modified\npress o to OVERWRITE s to SKIP")
+                                     item_path + " has been modified\npress o to OVERWRITE s to SKIP")
             if(input == 'o'):
                 return True
         else:
@@ -437,16 +439,34 @@ def pull_content(cwd, fid):
     drive_data(data)
 
 
-def list_local(cwd):
+def list_local(cwd, untracked = []):
     local_lis = os.listdir(cwd)
     drive_ignore_path = os.path.join(cwd, '.driveignore')
     if os.path.isfile(drive_ignore_path):
         file = open(drive_ignore_path, 'r')
-        untracked_files = file.readlines()
-        for f in untracked_files:
-            local_lis.remove(f[:-1])
+        untracked_files = [os.path.join(cwd, exp_to_regex(x)) for x in file.readlines()]
+        untracked = untracked + untracked_files
         file.close()
-    return local_lis
+    for uf in untracked:
+        for lf in local_lis:
+            if exp_matchfile(uf, os.path.join(cwd, lf)):
+                todelete = True
+                for neguf in untracked:
+                    if neguf[0] == '!':
+                        if exp_matchfile(neguf[1:], os.path.join(cwd, lf)):
+                            todelete = False
+                            break
+                if todelete:
+                    local_lis.remove(lf)
+    return local_lis, untracked
+
+
+def exp_to_regex(exp):
+    return exp[:-1].replace('*', '([^/]*)').replace('([^/]*)([^/]*)', '(.*)')
+
+
+def exp_matchfile(exp, filename):
+    return re.search(exp, filename) is not None
 
 
 def list_status(cwd, sync_time):
@@ -469,9 +489,9 @@ def list_status(cwd, sync_time):
         click.secho("No changes made since the last sync")
 
 
-def push_content(cwd, fid):
+def push_content(cwd, fid, untracked = []):
     drive_lis = get_child(cwd)
-    local_lis = list_local(cwd)
+    local_lis, untracked = list_local(cwd, untracked)
     data = drive_data()
     for item in local_lis:
         item_path = os.path.join(cwd, item)
@@ -484,7 +504,7 @@ def push_content(cwd, fid):
                 if child_cwd not in data.keys():
                     data[child_cwd] = {'id': child_id, 'time': time.time()}
                     data = drive_data(data)
-            push_content(child_cwd, child_id)
+            push_content(child_cwd, child_id, untracked)
         else:
             item_path = os.path.join(cwd, item)
             if item not in drive_lis.keys():
