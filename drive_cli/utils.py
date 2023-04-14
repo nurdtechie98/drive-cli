@@ -9,6 +9,7 @@ import time
 from mimetypes import MimeTypes
 from pick import Picker
 from datetime import datetime
+from dateutil import tz
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
@@ -166,8 +167,12 @@ def write_needed(dir_name, item):
 
 def push_needed(drive, item_path):
     drive_time = time.mktime(time.strptime(
-        drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) + float(19800.00)
-    local_time = os.path.getmtime(item_path) - float(19801.00)
+        drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) #+ float(19800.00)
+    # utc to local time
+    dt = datetime.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    dt = dt.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal())
+    drive_time = time.mktime(dt.timetuple())
+    local_time = os.path.getmtime(item_path) #- float(19801.00)
     data = drive_data()
     sync_time = data[item_path]['time']
     if (type(sync_time) is not float):
@@ -256,7 +261,7 @@ def get_child(cwd):
     service = build('drive', 'v3', http=creds.authorize(Http()))
     page_token = None
     drive_lis = {}
-    query = "'" + data[cwd]['id'] + "' in parents"
+    query = "'" + data[cwd]['id'] + "' in parents and trashed = false"
     while True:
         children = service.files().list(q=query,
                                         spaces='drive',
@@ -462,7 +467,7 @@ def list_local(cwd, untracked = []):
 
 
 def exp_to_regex(exp):
-    return exp[:-1].replace('*', '([^/]*)').replace('([^/]*)([^/]*)', '(.*)')
+    return exp[:-1].replace('**', '(...)').replace('*', '([^/]*)').replace('(...)', '(.*)')
 
 
 def exp_matchfile(exp, filename):
